@@ -856,9 +856,9 @@ airo:Risk rdf:type owl:Class .
                            :denotesConcept :JPMorganObservedModelRisk ;
                            :observedInDocument :JPMorgan2024AnnualReport ;
                            :usedByActor :JPMorganChase ;
-                           :usesTerminology "Estimations and Model risk" ;
+                           :usesTerminology "model risk" ;
                            :hasEvidence :JPMorgan2024ModelRiskEvidence ;
-                           rdfs:label "JPMorgan use of 'Estimations and Model risk'"@en .
+                           rdfs:label "JPMorgan use of 'Model risk'"@en .
 
 :JPMorganObservedModelRisk rdf:type owl:NamedIndividual ,
                                    :ModelRisk ;
