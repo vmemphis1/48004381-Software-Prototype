@@ -2,22 +2,16 @@
 ## Dependencies and setup
 
 The prototype needs Python 3 and a modern web browser. Its Python dependencies
-are listed in `scripts/requirements.txt`: `rdflib>=7.0,<8` runs the graph and
-queries, and `pypdf>=5.0` is used by the evidence verification script. The
-browser libraries Cytoscape.js and PDF.js are included in the repository.
+are listed in `scripts/requirements.txt`.
 
 From a terminal in the repository root, create a virtual environment and install
-the Python dependencies (Python 3.14 has been used for this project):
+the Python dependencies:
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
 python3 -m pip install -r scripts/requirements.txt
 ```
-
-The launcher uses Bash and `lsof` to detect an existing server on its port.
-It attempts to install the requirements if `rdflib` cannot be imported, but
-installing them explicitly also ensures that `pypdf` is available.
 
 ## Run the prototype
 
@@ -27,11 +21,10 @@ With the virtual environment active, run:
 explorer/run.sh
 ```
 
-The server opens the explorer at <http://127.0.0.1:8042/>. Press Ctrl+C in the
-terminal to stop it. To choose another port, use `explorer/run.sh --port 8043`, for example.
+The server opens the explorer at <http://127.0.0.1:8042/>.
+To choose another port, use `explorer/run.sh --port 8043`, for example.
 
-To run the test suite, also install Node.js (version 24 has been used for this
-project) and run `python3 -m unittest discover -s explorer/tests -v`.
+To run the test suite, install Node.js and run `python3 -m unittest discover -s explorer/tests -v`.
 
 **Explore** — the default landing view. It shows the ten competency questions
 and supporting queries as cards, followed by **Bookmarks** for your saved Build
