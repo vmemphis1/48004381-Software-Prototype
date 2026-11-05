@@ -1,0 +1,19 @@
+# Firm disclosures of third-party AI governance practices and their evidence.
+PREFIX :     <https://w3id.org/ai-finance-governance#>
+PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT DISTINCT ?firmLabel ?practice ?practiceLabel ?page ?confidence
+WHERE {
+  ?firm a :FinancialInstitution ;
+        rdfs:label ?firmLabel ;
+        :hasGovernanceDisclosure ?disclosure .
+  ?disclosure :disclosesPractice ?practice .
+  ?practice rdf:type/rdfs:subClassOf* :ThirdPartyAIGovernance ;
+            rdfs:label ?practiceLabel .
+  OPTIONAL {
+    ?practice :hasEvidence ?evidence .
+    ?evidence :pageReference ?page ; :confidenceLevel ?confidence .
+  }
+}
+ORDER BY ?firmLabel

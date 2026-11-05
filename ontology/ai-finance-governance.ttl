@@ -1,0 +1,3096 @@
+@prefix : <https://w3id.org/ai-finance-governance#> .
+@prefix afg: <https://w3id.org/ai-finance-governance#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix xml: <http://www.w3.org/XML/1998/namespace> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix airo: <https://w3id.org/airo#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix fibo-fbc-fct-fse: <https://spec.edmcouncil.org/fibo/ontology/FBC/FunctionalEntities/FinancialServicesEntities/> .
+@base <https://w3id.org/ai-finance-governance#> .
+
+# Ontology metadata
+
+<https://w3id.org/ai-finance-governance> rdf:type owl:Ontology ;
+                                           owl:imports <https://w3id.org/airo> ;
+                                           owl:versionIRI <https://w3id.org/ai-finance-governance/1.6> ;
+                                           dcterms:creator "Vahid Teunisse" ;
+                                           dcterms:date "2026"^^xsd:gYear ;
+                                           dcterms:description "An OWL ontology of AI governance terminology for the financial sector. Maps how Australian and international financial institutions implement AI safety and compliance standards across APRA CPG 234, ASIC RG 271, EU AI Act, NIST AI RMF 1.0, and MAS AIRM regulatory frameworks."@en ;
+                                           dcterms:license <https://creativecommons.org/licenses/by/4.0/> ;
+                                           dcterms:modified "2026-09-22"^^xsd:date ;
+                                           dcterms:title "AI Finance Governance Ontology"@en ;
+                                           rdfs:comment "Developed using the Ontology 101 (Noy 2001) + METHONTOLOGY (Fernandez-Lopez 1997) hybrid methodology."@en ;
+                                           rdfs:comment "FIBO is reused by mapping rather than by import. The single reused FIBO term is declared locally as a minimal external reference (MIREOT style) and aligned with rdfs:subClassOf, so no FIBO module is loaded at run time. See ORSD section 7.2."@en ;
+                                           rdfs:comment "Version 1.4 adopts the project namespace at w3id.org. The redirect registration remains an external publication step documented in README.md."@en ;
+                                           owl:versionInfo "1.6"@en .
+
+# Datatypes
+
+xsd:gYear rdf:type rdfs:Datatype .
+
+# Object properties
+
+:addressesRisk rdf:type owl:ObjectProperty ;
+               rdfs:domain :GovernanceArtifact ;
+               rdfs:range airo:Risk ;
+               rdfs:label "addresses risk"@en .
+
+:classifiesSystemAs rdf:type owl:ObjectProperty ;
+                    rdfs:domain :RegulatoryFramework ;
+                    rdfs:range :RiskTier ;
+                    rdfs:label "classifies system as"@en .
+
+:definesConcept rdf:type owl:ObjectProperty ;
+                rdfs:domain :DefinitionStatement ;
+                rdfs:comment "Links a definition statement to the concept it defines."@en ;
+                rdfs:label "defines concept"@en .
+
+:denotesConcept rdf:type owl:ObjectProperty ;
+                rdfs:domain :TerminologyUsage ;
+                rdfs:comment "Links an observed term usage to a concept instance, such as a particular firm's instance of model risk or responsible AI."@en ;
+                rdfs:label "denotes concept"@en .
+
+:disclosesPractice rdf:type owl:ObjectProperty ;
+                   rdfs:domain :FirmAIGovernanceDisclosure ;
+                   rdfs:range :GovernanceProcess ;
+                   rdfs:label "discloses practice"@en .
+
+:disclosesRisk rdf:type owl:ObjectProperty ;
+               rdfs:domain :FirmAIGovernanceDisclosure ;
+               rdfs:range airo:Risk ;
+               rdfs:label "discloses risk"@en .
+
+:embodiesPrinciple rdf:type owl:ObjectProperty ;
+                   rdfs:domain :AIGovernancePolicy ;
+                   rdfs:range :AIPrinciple ;
+                   rdfs:comment "Links a governance policy to a named ethical or responsible-AI principle evidenced in that policy."@en ;
+                   rdfs:label "embodies principle"@en .
+
+:extractedFrom rdf:type owl:ObjectProperty ;
+               rdfs:domain :EvidenceSnippet ;
+               rdfs:range :SourceDocument ;
+               rdfs:label "extracted from"@en .
+
+:hasApprovalProcess rdf:type owl:ObjectProperty ;
+                    rdfs:domain :FinancialInstitution ;
+                    rdfs:range :AIDeploymentApproval ;
+                    rdfs:label "has approval process"@en .
+
+:hasEvidence rdf:type owl:ObjectProperty ;
+             rdfs:range :EvidenceSnippet ;
+             rdfs:label "has evidence"@en .
+
+:hasGovernanceBody rdf:type owl:ObjectProperty ;
+                   rdfs:domain :FinancialInstitution ;
+                   rdfs:range :AIGovernanceBody ;
+                   rdfs:label "has governance body"@en .
+
+:hasGovernanceDisclosure rdf:type owl:ObjectProperty ;
+                         rdfs:domain :FinancialInstitution ;
+                         rdfs:range :FirmAIGovernanceDisclosure ;
+                         rdfs:label "has governance disclosure"@en .
+
+:hasGovernanceFramework rdf:type owl:ObjectProperty ;
+                        rdfs:domain :FinancialInstitution ;
+                        rdfs:range :AIGovernanceFramework ;
+                        rdfs:label "has governance framework"@en .
+
+:hasGovernancePolicy rdf:type owl:ObjectProperty ;
+                     rdfs:domain :FinancialInstitution ;
+                     rdfs:range :AIGovernancePolicy ;
+                     rdfs:label "has governance policy"@en .
+
+:hasGovernanceRequirement rdf:type owl:ObjectProperty ;
+                          rdfs:domain :GovernanceArtifact ;
+                          rdfs:range :GovernanceRequirement ;
+                          rdfs:label "has governance requirement"@en .
+
+:hasRiskTier rdf:type owl:ObjectProperty ;
+             rdfs:domain :AISystem ;
+             rdfs:range :RiskTier ;
+             rdfs:label "has risk tier"@en .
+
+:isSubjectTo rdf:type owl:ObjectProperty ;
+             rdfs:domain :FinancialInstitution ;
+             rdfs:range :RegulatoryFramework ;
+             rdfs:label "is subject to"@en .
+
+:observedInDocument rdf:type owl:ObjectProperty ;
+                    rdfs:domain :TerminologyUsage ;
+                    rdfs:range :SourceDocument ;
+                    rdfs:label "observed in document"@en .
+
+:referencesFramework rdf:type owl:ObjectProperty ;
+                     rdfs:domain :AIGovernancePolicy ;
+                     rdfs:range :RegulatoryFramework ;
+                     rdfs:label "references framework"@en .
+
+:requiresApprovalProcess rdf:type owl:ObjectProperty ;
+                         rdfs:domain :AIGovernancePolicy ;
+                         rdfs:range :AIDeploymentApproval ;
+                         rdfs:label "requires approval process"@en .
+
+:requiresConformityAssessment rdf:type owl:ObjectProperty ;
+                              rdfs:domain :RegulatoryFramework ;
+                              rdfs:range :ConformityAssessment ;
+                              rdfs:label "requires conformity assessment"@en .
+
+:requiresDataGovernance rdf:type owl:ObjectProperty ;
+                        rdfs:domain :GovernanceArtifact ;
+                        rdfs:range :DataGovernance ;
+                        rdfs:comment "Applies to either a regulatory framework or a firm policy that explicitly requires data-governance practices."@en ;
+                        rdfs:label "requires data governance"@en .
+
+:requiresHumanOversight rdf:type owl:ObjectProperty ;
+                        rdfs:domain :RegulatoryFramework ;
+                        rdfs:range :HumanOversight ;
+                        rdfs:label "requires human oversight"@en .
+
+:statedBy rdf:type owl:ObjectProperty ;
+          rdfs:domain :DefinitionStatement ;
+          rdfs:comment "Links a definition statement to the firm or regulatory framework that states it."@en ;
+          rdfs:label "stated by"@en .
+
+:supportsAssertion rdf:type owl:ObjectProperty ;
+                   rdfs:domain :EvidenceSnippet ;
+                   rdfs:comment "Links a snippet to the assertion, individual, or axiom-like resource it supports."@en ;
+                   rdfs:label "supports assertion"@en .
+
+:usedByActor rdf:type owl:ObjectProperty ;
+             rdfs:domain :TerminologyUsage ;
+             rdfs:range :GovernanceActor ;
+             rdfs:label "used by actor"@en .
+
+# Datatype properties
+
+:confidenceLevel rdf:type owl:DatatypeProperty ;
+                 rdfs:domain :EvidenceSnippet ;
+                 rdfs:range xsd:string ;
+                 rdfs:label "confidence level"@en .
+
+:definitionText rdf:type owl:DatatypeProperty ;
+                rdfs:domain :DefinitionStatement ;
+                rdfs:range xsd:string ;
+                rdfs:comment "The definition as worded by the source, quoted rather than paraphrased."@en ;
+                rdfs:label "definition text"@en .
+
+:documentDate rdf:type owl:DatatypeProperty ;
+              rdfs:domain :SourceDocument ;
+              rdfs:range xsd:string ;
+              rdfs:comment "Publication date, effective date, reporting date, or as-at date as written in the source."@en ;
+              rdfs:label "document date"@en .
+
+:documentType rdf:type owl:DatatypeProperty ;
+              rdfs:domain :SourceDocument ;
+              rdfs:range xsd:string ;
+              rdfs:label "document type"@en .
+
+:documentURL rdf:type owl:DatatypeProperty ;
+             rdfs:domain :SourceDocument ;
+             rdfs:range xsd:anyURI ;
+             rdfs:label "document URL"@en .
+
+:exactText rdf:type owl:DatatypeProperty ;
+           rdfs:domain :EvidenceSnippet ;
+           rdfs:range xsd:string ;
+           rdfs:label "exact text"@en .
+
+:extractionDate rdf:type owl:DatatypeProperty ;
+                rdfs:domain :EvidenceSnippet ;
+                rdfs:range xsd:date ;
+                rdfs:label "extraction date"@en .
+
+:jurisdiction rdf:type owl:DatatypeProperty ;
+              rdfs:range xsd:string ;
+              rdfs:label "jurisdiction"@en .
+
+:localPath rdf:type owl:DatatypeProperty ;
+           rdfs:domain :SourceDocument ;
+           rdfs:range xsd:string ;
+           rdfs:label "local path"@en .
+
+:pageReference rdf:type owl:DatatypeProperty ;
+               rdfs:domain :EvidenceSnippet ;
+               rdfs:range xsd:string ;
+               rdfs:label "page reference"@en .
+
+:policyURL rdf:type owl:DatatypeProperty ;
+           rdfs:range xsd:anyURI ;
+           rdfs:label "policy URL"@en .
+
+:retrievalDate rdf:type owl:DatatypeProperty ;
+               rdfs:domain :SourceDocument ;
+               rdfs:range xsd:date ;
+               rdfs:label "retrieval date"@en .
+
+:sectionReference rdf:type owl:DatatypeProperty ;
+                  rdfs:domain :EvidenceSnippet ;
+                  rdfs:range xsd:string ;
+                  rdfs:label "section reference"@en .
+
+:sha256 rdf:type owl:DatatypeProperty ;
+        rdfs:domain :SourceDocument ;
+        rdfs:range xsd:string ;
+        rdfs:label "SHA-256 checksum"@en .
+
+:sourceDocument rdf:type owl:DatatypeProperty ;
+                rdfs:range xsd:string ;
+                rdfs:label "source document"@en .
+
+:usesTerminology rdf:type owl:DatatypeProperty ;
+                 rdfs:domain :TerminologyUsage ;
+                 rdfs:range xsd:string ;
+                 rdfs:comment "Records the exact term used by a firm or regulator for a given governance concept, enabling cross-institution terminology comparison."@en ;
+                 rdfs:label "uses terminology"@en .
+
+# Classes
+
+fibo-fbc-fct-fse:FinancialInstitution rdf:type owl:Class ;
+                                      rdfs:label "financial institution"@en ;
+                                      skos:definition "financial service provider identified as either a government agency or privately owned entity that collects funds from the public and from other institutions, and invests those funds in financial assets, such as loans, securities, bank deposits, and income-generating property"@en ;
+                                      rdfs:comment "External FIBO class reused by mapping only, not redefined here. Label and definition are reproduced verbatim from the FIBO FBC FunctionalEntities FinancialServicesEntities module (EDM Council, MIT License) so the alignment stays traceable without importing the module."@en ;
+                                      rdfs:isDefinedBy <https://spec.edmcouncil.org/fibo/ontology/FBC/FunctionalEntities/FinancialServicesEntities/> ;
+                                      dcterms:source <https://spec.edmcouncil.org/fibo/ontology/FBC/FunctionalEntities/FinancialServicesEntities/> ;
+                                      :retrievalDate "2026-08-31"^^xsd:date ;
+                                      :sha256 "f1047cce38f164b6f49bd6c21a340073f0168ff1b36a491e1556b79ad7d6d0da" .
+
+:AIDeploymentApproval rdf:type owl:Class ;
+                      rdfs:subClassOf :GovernanceProcess ;
+                      rdfs:comment "An internal review and sign-off process a firm must complete before deploying an AI system into production."@en ;
+                      rdfs:label "AI Deployment Approval Process"@en ;
+                      skos:altLabel "AI Model Validation"@en ,
+                                    "AI Pre-deployment Review"@en ,
+                                    "Model Approval Process"@en .
+
+:AIFinanceGovernanceConcept rdf:type owl:Class ;
+                            rdfs:comment "Root concept for the AI Finance Governance Ontology classification tree."@en ;
+                            rdfs:label "AI Finance Governance Concept"@en .
+
+:AIGovernanceBody rdf:type owl:Class ;
+                  rdfs:subClassOf :GovernanceActor ;
+                  rdfs:comment "An internal committee, board, or function within a firm responsible for AI oversight and accountability."@en ;
+                  rdfs:label "AI Governance Body"@en ;
+                  skos:altLabel "AI Ethics Board"@en ,
+                                "AI Risk Committee"@en ,
+                                "Model Risk Committee"@en ,
+                                "Technology Risk Committee"@en .
+
+:AIGovernanceFramework rdf:type owl:Class ;
+                       rdfs:subClassOf :GovernanceArtifact ;
+                       rdfs:comment "A framework, toolkit, or structured set of controls used by a firm to govern AI. It is broader than, and must not automatically be treated as, a published formal AI policy."@en ;
+                       rdfs:label "AI Governance Framework"@en ;
+                       skos:altLabel "AI Governance Toolkit"@en ,
+                                     "Responsible AI Framework"@en .
+
+:AIGovernancePolicy rdf:type owl:Class ;
+                    rdfs:subClassOf :GovernanceArtifact ;
+                    rdfs:comment "A formal document published by a firm or regulator that sets out principles, rules, or standards for the development, deployment, and oversight of AI systems."@en ;
+                    rdfs:label "AI Governance Policy"@en ;
+                    skos:altLabel "AI Ethics Policy"@en ,
+                                  "AI Framework"@en ,
+                                  "AI Policy"@en ,
+                                  "Responsible AI Policy"@en .
+
+:AIPrinciple rdf:type owl:Class ;
+             rdfs:subClassOf :AIFinanceGovernanceConcept ;
+             rdfs:comment "A principle or quality used to assess responsible, trustworthy, or well-governed AI."@en ;
+             rdfs:label "AI Principle"@en .
+
+:AISystem rdf:type owl:Class ;
+          rdfs:subClassOf :AIFinanceGovernanceConcept ,
+                          airo:AISystem ;
+          rdfs:comment "An AI-based machine system that makes predictions, recommendations, or decisions influencing real or virtual environments."@en ;
+          rdfs:comment "Intentionally has no concrete system instances: the study compares governance obligations and terminology rather than cataloguing deployed systems. Retained because the EU AI Act and NIST AI RMF both define this regulated subject, and CQ4 points their definitions to this class."@en ;
+          dcterms:source :EUAIActDocument ,
+                         :NISTAIRMFDocument ;
+          rdfs:label "AI System"@en ;
+          skos:altLabel "Artificial Intelligence System"@en ,
+                        "Automated Decision System"@en .
+
+:AlgorithmicBias rdf:type owl:Class ;
+                 rdfs:subClassOf airo:Risk ;
+                 rdfs:comment "Systematic and unfair discrimination in AI outputs, typically arising from training data, model design, or system deployment context."@en ;
+                 rdfs:label "Bias"@en ;
+                 skos:altLabel "AI Fairness Risk"@en ,
+                               "Algorithmic Bias"@en ,
+                               "Unfair Discrimination"@en .
+
+:ConformityAssessment rdf:type owl:Class ;
+                      rdfs:subClassOf :GovernanceProcess ;
+                      rdfs:comment "A process to demonstrate that an AI system meets the requirements of an applicable regulatory framework before deployment or market placement."@en ;
+                      rdfs:label "Conformity Assessment"@en ;
+                      skos:altLabel "Compliance Assessment"@en ,
+                                    "Regulatory Audit"@en .
+
+:DataGovernance rdf:type owl:Class ;
+                rdfs:subClassOf :GovernanceProcess ;
+                rdfs:comment "Policies and processes ensuring that data used to train and operate AI systems is accurate, complete, representative, and fit for purpose."@en ;
+                rdfs:label "Data Governance"@en ;
+                skos:altLabel "Data Quality Management"@en ,
+                              "Data Stewardship"@en .
+
+:DefinitionStatement rdf:type owl:Class ;
+                     rdfs:subClassOf :GovernanceArtifact ;
+                     rdfs:comment "A definition of a concept as stated by a named source, whether a firm or a regulatory framework. Used to compare how different sources define the same concept."@en ;
+                     rdfs:label "Definition Statement"@en .
+
+:EvidenceArtifact rdf:type owl:Class ;
+                  rdfs:subClassOf :AIFinanceGovernanceConcept ;
+                  rdfs:comment "A document, snippet, or extraction record used to support knowledge graph assertions."@en ;
+                  rdfs:label "Evidence Artifact"@en .
+
+:EvidenceSnippet rdf:type owl:Class ;
+                 rdfs:subClassOf :EvidenceArtifact ;
+                 rdfs:comment "A short excerpt, paraphrase, or source-specific note that supports a knowledge graph assertion."@en ;
+                 rdfs:label "Evidence Snippet"@en .
+
+:Explainability rdf:type owl:Class ;
+                rdfs:subClassOf :AIPrinciple ;
+                rdfs:comment "The degree to which the outputs and decision logic of an AI system can be understood by human stakeholders."@en ;
+                rdfs:label "Explainability"@en ;
+                skos:altLabel "Interpretability"@en ,
+                              "Transparency"@en .
+
+:ExplainabilityObligation rdf:type owl:Class ;
+                          rdfs:subClassOf :GovernanceRequirement ;
+                          rdfs:comment "Reclassified in version 1.3. Previously a direct subclass of :GovernanceObligation, which made it a SIBLING of :GovernanceRequirement. Because :hasGovernanceRequirement has range :GovernanceRequirement, no property could link a regulatory framework to an explainability obligation, so competency question 3 was unanswerable as modelled. An explainability obligation is a requirement a framework imposes, so subsuming it under :GovernanceRequirement is the correct reading and keeps the obligation/requirement distinction intact."@en ;
+                          rdfs:comment "A regulatory or policy requirement that AI system outputs and decisions be interpretable and explainable to affected parties."@en ;
+                          rdfs:label "Explainability Obligation"@en ;
+                          skos:altLabel "Interpretability Obligation"@en ,
+                                        "Right to Explanation"@en ,
+                                        "Transparency Requirement"@en .
+
+:FinancialInstitution rdf:type owl:Class ;
+                      rdfs:subClassOf :GovernanceActor ,
+                                      fibo-fbc-fct-fse:FinancialInstitution ;
+                      rdfs:comment "A firm operating in the financial sector that is subject to AI governance obligations and whose disclosures are analysed in this study."@en ;
+                      rdfs:label "Financial Institution"@en .
+
+:FirmAIGovernanceDisclosure rdf:type owl:Class ;
+                            rdfs:subClassOf :GovernanceArtifact ,
+                                            :SourceDocument ;
+                            rdfs:comment "A public firm document or web page that contains evidence about AI governance. A disclosure is not automatically a formal AI governance policy."@en ;
+                            rdfs:label "Firm AI Governance Disclosure"@en .
+
+:GenerativeAIRisk rdf:type owl:Class ;
+                  rdfs:subClassOf airo:Risk ;
+                  rdfs:comment "Risk arising from generative AI, including inaccurate output, bias, privacy, intellectual-property, security, or misuse concerns."@en ;
+                  rdfs:label "Generative AI Risk"@en .
+
+:GovernanceActor rdf:type owl:Class ;
+                 rdfs:subClassOf :AIFinanceGovernanceConcept ;
+                 rdfs:comment "A person, organisation, committee, or function that participates in AI governance."@en ;
+                 rdfs:label "Governance Actor"@en .
+
+:GovernanceArtifact rdf:type owl:Class ;
+                    rdfs:subClassOf :AIFinanceGovernanceConcept ;
+                    rdfs:comment "A policy, framework, standard, report, or other artefact that records AI governance rules or commitments."@en ;
+                    rdfs:label "Governance Artifact"@en .
+
+:GovernanceObligation rdf:type owl:Class ;
+                      rdfs:subClassOf :AIFinanceGovernanceConcept ;
+                      rdfs:comment "A requirement imposed by a regulatory framework, standard, or internal policy."@en ;
+                      rdfs:label "Governance Obligation"@en .
+
+:GovernanceProcess rdf:type owl:Class ;
+                   rdfs:subClassOf :AIFinanceGovernanceConcept ;
+                   rdfs:comment "A repeatable activity or control process used to govern AI systems."@en ;
+                   rdfs:label "Governance Process"@en .
+
+:GovernanceRequirement rdf:type owl:Class ;
+                       rdfs:subClassOf :GovernanceObligation ;
+                       rdfs:comment "A specific requirement, control expectation, or obligation stated in a policy, standard, or regulatory framework."@en ;
+                       rdfs:label "Governance Requirement"@en .
+
+:HighRiskAISystem rdf:type owl:Class ;
+                  rdfs:subClassOf :AISystem ;
+                  rdfs:comment "An AI system classified as high-risk under a regulatory framework, subject to enhanced governance requirements."@en ;
+                  rdfs:comment "Intentionally has no deployed-system instances. It is retained as an expectation-only class because Article 6 of the EU AI Act defines the high-risk category; the populated :HighRiskTier captures the regulatory vocabulary without inventing firm systems."@en ;
+                  dcterms:source :EUAIActDocument ;
+                  rdfs:label "High-Risk AI System"@en .
+
+:HighRiskTier rdf:type owl:Class ;
+              rdfs:subClassOf :RiskTier ;
+              rdfs:comment "A risk classification level indicating that an AI system is subject to enhanced governance requirements."@en ;
+              rdfs:label "High Risk Tier"@en ;
+              skos:altLabel "High-Impact AI"@en ,
+                            "Tier 1 AI"@en .
+
+:HumanOversight rdf:type owl:Class ;
+                rdfs:subClassOf :GovernanceProcess ;
+                rdfs:comment "The ability of humans to monitor, understand, intervene in, and where necessary override the outputs or decisions of an AI system."@en ;
+                rdfs:label "Human Oversight"@en ;
+                skos:altLabel "Human Control"@en ,
+                              "Human Supervision"@en ,
+                              "Human-in-the-Loop"@en .
+
+:ModelRisk rdf:type owl:Class ;
+           rdfs:subClassOf airo:Risk ;
+           rdfs:comment "The risk of adverse consequences from decisions based on incorrect, misused, or poorly governed AI/statistical models."@en ;
+           rdfs:label "Model Risk"@en ;
+           skos:altLabel "AI Risk"@en ,
+                         "Algorithmic Risk"@en ,
+                         "Model Governance Risk"@en .
+
+:ModelRiskPolicy rdf:type owl:Class ;
+                 rdfs:subClassOf :GovernanceArtifact ;
+                 rdfs:comment "A formal internal policy governing model risk, including model monitoring, validation, approval, and use controls."@en ;
+                 rdfs:label "Model Risk Policy"@en .
+
+:ModelValidation rdf:type owl:Class ;
+                 rdfs:subClassOf :AIDeploymentApproval ;
+                 rdfs:comment "Independent or controlled review, testing, re-validation, and approval of a model before implementation or continued use."@en ;
+                 rdfs:label "Model Validation"@en .
+
+:RegulatoryFramework rdf:type owl:Class ;
+                     rdfs:subClassOf :GovernanceArtifact ;
+                     rdfs:comment "A formal set of rules, standards, or guidelines issued by a regulatory authority governing AI systems in financial services."@en ;
+                     rdfs:label "Regulatory Framework"@en ;
+                     skos:altLabel "AI Regulation"@en ,
+                                   "Governance Standard"@en .
+
+:ResponsibleAI rdf:type owl:Class ;
+               rdfs:subClassOf :AIPrinciple ;
+               rdfs:comment "A set of principles for developing and deploying AI systems in an ethical, transparent, accountable, and human-centred manner."@en ;
+               rdfs:label "Responsible AI"@en ;
+               skos:altLabel "Ethical AI"@en ,
+                             "Human-Centred AI"@en ,
+                             "Trustworthy AI"@en .
+
+:RiskTier rdf:type owl:Class ;
+          rdfs:subClassOf :AIFinanceGovernanceConcept ;
+          rdfs:comment "A classification level assigned to an AI system based on its assessed risk, used to determine applicable governance obligations."@en ;
+          rdfs:label "Risk Tier"@en ;
+          skos:altLabel "AI Risk Category"@en ,
+                        "Risk Classification"@en .
+
+:SourceDocument rdf:type owl:Class ;
+                rdfs:subClassOf :EvidenceArtifact ;
+                rdfs:comment "A regulatory document, standard, annual report, policy page, or firm disclosure used as a source for knowledge graph population."@en ;
+                rdfs:label "Source Document"@en .
+
+:TerminologyUsage rdf:type owl:Class ;
+                  rdfs:subClassOf :EvidenceArtifact ;
+                  rdfs:comment "An observed use of a term by a firm, regulator, or standard-setting body, linked to the concept it denotes and the source where it appears."@en ;
+                  rdfs:label "Terminology Usage"@en .
+
+:ThirdPartyAIGovernance rdf:type owl:Class ;
+                        rdfs:subClassOf :GovernanceProcess ;
+                        rdfs:comment "Policies and processes governing the use of AI systems provided by external vendors or service providers."@en ;
+                        rdfs:label "Third-Party AI Governance"@en ;
+                        skos:altLabel "AI Outsourcing Risk"@en ,
+                                      "Third-Party Model Risk"@en ,
+                                      "Vendor AI Risk"@en .
+
+airo:AISystem rdf:type owl:Class .
+
+airo:Risk rdf:type owl:Class .
+
+# Financial institutions and regulatory frameworks
+
+:ANZ rdf:type owl:NamedIndividual ,
+              :FinancialInstitution ;
+     :hasApprovalProcess :ANZModelMonitoringAndRevalidation ;
+     :hasGovernanceDisclosure :ANZ2024AnnualReport ;
+     :hasGovernanceFramework :ANZAIGovernanceFramework2024 ;
+     :jurisdiction "Australia" ;
+     rdfs:label "ANZ Banking Group"@en ;
+     skos:altLabel "ANZ"@en .
+
+:APRA_CPG234 rdf:type owl:NamedIndividual ,
+                      :RegulatoryFramework ;
+             :jurisdiction "Australia" ;
+             dcterms:description "Australian Prudential Regulation Authority Prudential Practice Guide 234 — Information Security."@en ;
+             rdfs:label "APRA CPG 234"@en .
+
+:ASIC_RG271 rdf:type owl:NamedIndividual ,
+                     :RegulatoryFramework ;
+            :jurisdiction "Australia" ;
+            dcterms:description "Australian Securities and Investments Commission Regulatory Guide 271 — Internal Dispute Resolution (covers AI-assisted decisions)."@en ;
+            rdfs:label "ASIC RG 271"@en .
+
+:AustralianAIEthicsPrinciples rdf:type owl:NamedIndividual ,
+                                       :RegulatoryFramework ;
+                              :jurisdiction "Australia" ;
+                              dcterms:description "Australia's AI Ethics Principles, eight voluntary principles published by the Department of Industry, Science and Resources."@en ;
+                              rdfs:comment "Represented as a regulatory framework, resolving the open question recorded in ORSD section 18. The framework is voluntary rather than binding, which is the same status already carried by the NIST AI RMF, so a separate 'reference framework' class would add a distinction the competency questions never draw. The publisher records the principles in the past tense and states that they have been evolved by the Guidance for AI Adoption of 21 October 2025; they are retained because competency question 4 names them explicitly and because firm policies in this corpus still mirror their wording."@en ;
+                              rdfs:label "Australia's AI Ethics Principles"@en ;
+                              skos:altLabel "AI Ethics Principles"@en .
+
+:AustralianAIEthicsPrinciples :hasGovernanceRequirement :AUAIEthicsExplainability .
+
+:CommonwealthBank rdf:type owl:NamedIndividual ,
+                           :FinancialInstitution ;
+                  :hasGovernanceDisclosure :CBA2024AnnualReport ,
+                                           :CBAArtificialIntelligenceApproachPage ;
+                  :hasGovernanceFramework :CBAResponsibleAIToolkit2024 ;
+                  :hasGovernancePolicy :CBAArtificialIntelligenceApproach ;
+                  :jurisdiction "Australia" ;
+                  :policyURL "https://www.commbank.com.au/about-us/opportunity-initiatives/policies-and-practices/artificial-intelligence.html"^^xsd:anyURI ;
+                  rdfs:label "Commonwealth Bank of Australia"@en ;
+                  skos:altLabel "CBA"@en .
+
+:CommonwealthBank :hasGovernancePolicy :CBAGroupArtificialIntelligencePolicy ;
+                  :hasGovernanceBody :CBAModelRiskGovernanceCommittee .
+
+:EU_AI_Act rdf:type owl:NamedIndividual ,
+                    :RegulatoryFramework ;
+           :jurisdiction "European Union" ;
+           dcterms:description "Regulation (EU) 2024/1689 of the European Parliament and of the Council on artificial intelligence."@en ;
+           rdfs:label "EU AI Act"@en .
+
+:EU_AI_Act :hasGovernanceRequirement :EUAIActArticle13Transparency ;
+           :classifiesSystemAs :EUAIActHighRiskTier ;
+           :requiresConformityAssessment :EUAIActArticle43ConformityAssessment ;
+           :requiresDataGovernance :EUAIActArticle10DataGovernance ;
+           :requiresHumanOversight :EUAIActArticle14HumanOversight .
+
+:GoldmanSachs rdf:type owl:NamedIndividual ,
+                       :FinancialInstitution ;
+              :hasGovernanceBody :GoldmanArtificialIntelligenceRiskAndControlsCommittee ;
+              :hasGovernanceDisclosure :GoldmanSachs2024AnnualReport ,
+                                       :GoldmanSachs2024Form10KHTML ;
+              :jurisdiction "United States" ;
+              rdfs:label "Goldman Sachs Group, Inc."@en ;
+              skos:altLabel "GS"@en .
+
+:HSBC rdf:type owl:NamedIndividual ,
+               :FinancialInstitution ;
+      :hasApprovalProcess :HSBCAIModelReview2024 ;
+      :hasGovernanceBody :HSBCModelRiskCommittees2024 ;
+      :hasGovernanceDisclosure :HSBC2024AnnualReport ,
+                               :HSBCPrinciplesDocument ;
+      :hasGovernanceFramework :HSBCAIModelRiskFramework2024 ;
+      :jurisdiction "United Kingdom" ;
+      rdfs:label "HSBC Holdings plc"@en ;
+      skos:altLabel "HSBC"@en .
+
+:HSBC :hasGovernancePolicy :HSBCPrinciplesEthicalUseOfDataAndAI .
+
+:ISO_23894 rdf:type owl:NamedIndividual ,
+                    :RegulatoryFramework ;
+           :jurisdiction "International" ;
+           dcterms:description "International standard for AI risk management."@en ;
+           rdfs:label "ISO/IEC 23894:2023"@en .
+
+:ISO_42001 rdf:type owl:NamedIndividual ,
+                    :RegulatoryFramework ;
+           :jurisdiction "International" ;
+           dcterms:description "International standard for AI management systems."@en ;
+           rdfs:label "ISO/IEC 42001:2023"@en .
+
+:JPMorganChase rdf:type owl:NamedIndividual ,
+                        :FinancialInstitution ;
+               :hasApprovalProcess :JPMorganModelReviewApproval2024 ;
+               :hasGovernanceBody :JPMorganModelRiskGovernanceAndReview ;
+               :hasGovernanceDisclosure :JPMorgan2024AnnualReport ;
+               :hasGovernanceFramework :JPMorganModelRiskGovernanceFramework2024 ;
+               :jurisdiction "United States" ;
+               rdfs:label "JPMorgan Chase & Co."@en ;
+               skos:altLabel "JPMC"@en .
+
+:MAS_AIRM rdf:type owl:NamedIndividual ,
+                   :RegulatoryFramework ;
+          :jurisdiction "Singapore" ;
+          dcterms:description "MAS proposed AI Risk Management Guidelines. An archived official 20 March 2026 release describes consultation responses under review; later status is not established by that release. MindForge toolkit collaboration is distinct from guideline enactment."@en ;
+          rdfs:label "MAS AIRM Guidelines"@en .
+
+:NAB rdf:type owl:NamedIndividual ,
+              :FinancialInstitution ;
+     :hasGovernanceDisclosure :NAB2024AnnualReport ;
+     :hasGovernanceFramework :NABGenerativeAIGovernanceMeasures2024 ;
+     :jurisdiction "Australia" ;
+     rdfs:label "National Australia Bank"@en ;
+     skos:altLabel "NAB"@en .
+
+:NIST_AI_RMF rdf:type owl:NamedIndividual ,
+                      :RegulatoryFramework ;
+             :jurisdiction "United States" ;
+             dcterms:description "National Institute of Standards and Technology AI Risk Management Framework, version 1.0."@en ;
+             rdfs:label "NIST AI RMF 1.0"@en .
+
+:NIST_AI_RMF :hasGovernanceRequirement :NISTAIRMFExplainability .
+
+:Westpac rdf:type owl:NamedIndividual ,
+                  :FinancialInstitution ;
+         :hasGovernanceDisclosure :Westpac2024AnnualReport ;
+         :jurisdiction "Australia" ;
+         rdfs:label "Westpac Banking Corporation"@en ;
+         skos:altLabel "Westpac"@en .
+
+:Westpac :hasGovernanceDisclosure :WestpacAIPolicyPage ;
+         :hasGovernancePolicy :WestpacResponsibleAIPrinciples .
+
+# Governance policies, processes and concepts
+
+:ANZAIGovernanceFramework2024 rdf:type owl:NamedIndividual ,
+                                      :AIGovernanceFramework ;
+                             :hasEvidence :ANZ2024AIGovernanceEvidence ;
+                             :usesTerminology "governance and risk management frameworks" ;
+                             rdfs:label "ANZ AI Governance and Risk Management Frameworks (2024 disclosure)"@en .
+
+:ANZModelMonitoringAndRevalidation rdf:type owl:NamedIndividual ,
+                                            :ModelValidation ;
+                                   :hasEvidence :ANZ2024ModelRiskPolicyEvidence ;
+                                   rdfs:label "ANZ Model Monitoring, Re-validation, and Approval"@en .
+
+:ANZModelRiskPolicy2024 rdf:type owl:NamedIndividual ,
+                                :ModelRiskPolicy ;
+                       :addressesRisk :ANZObservedModelRisk ;
+                       :hasEvidence :ANZ2024ModelRiskPolicyEvidence ;
+                       :requiresApprovalProcess :ANZModelMonitoringAndRevalidation ;
+                       rdfs:label "ANZ Model Risk Policy (2024 disclosure)"@en .
+
+:ANZModelRiskTermUsage rdf:type owl:NamedIndividual ,
+                               :TerminologyUsage ;
+                      :denotesConcept :ANZObservedModelRisk ;
+                      :observedInDocument :ANZ2024AnnualReport ;
+                      :usedByActor :ANZ ;
+                      :usesTerminology "model risk" ;
+                      :hasEvidence :ANZ2024ModelRiskPolicyEvidence ;
+                      rdfs:label "ANZ use of 'model risk'"@en .
+
+:ANZObservedModelRisk rdf:type owl:NamedIndividual ,
+                              :ModelRisk ;
+                     rdfs:label "ANZ observed model risk concept"@en .
+
+:AUAIEthicsExplainability rdf:type owl:NamedIndividual ,
+                                   :ExplainabilityObligation ;
+                          :hasEvidence :AUAIEthicsExplainabilityEvidence ;
+                          rdfs:comment "Principle 6 of eight. Voluntary, like the NIST characteristic and unlike the EU AI Act article, so competency question 3 now separates one binding requirement from two voluntary ones."@en ;
+                          rdfs:label "Australian AI Ethics Principles transparency and explainability principle"@en .
+
+:CBAArtificialIntelligenceApproach rdf:type owl:NamedIndividual ,
+                                           :AIGovernancePolicy ;
+                                  :hasEvidence :CBAPublishedAIApproachEvidence ;
+                                  :policyURL "https://www.commbank.com.au/about-us/opportunity-initiatives/policies-and-practices/artificial-intelligence.html"^^xsd:anyURI ;
+                                  rdfs:comment "A public principles-based AI policy page. It is not represented as a separately issued PDF policy."@en ;
+                                  rdfs:label "Commonwealth Bank Approach to Artificial Intelligence"@en .
+
+:CBAGroupArtificialIntelligencePolicy rdf:type owl:NamedIndividual ,
+                                               :AIGovernancePolicy ;
+                                      :hasEvidence :CBAGroupAIPolicyEvidence ;
+                                      rdfs:comment "Named as a governing policy in CBA's operational risk disclosure. This is a named internal policy instrument, which is stronger evidence for competency question 1 than the public principles-based approach page alone. The policy text itself is not public, so only its existence is asserted, not its content."@en ;
+                                      rdfs:label "CBA Group Artificial Intelligence Policy"@en .
+
+:CBAModelRiskGovernanceCommittee rdf:type owl:NamedIndividual ,
+                                          :AIGovernanceBody ;
+                                 :hasEvidence :CBAModelRiskGovernanceCommitteeEvidence ;
+                                 rdfs:comment "Listed as a key management committee in the same operational risk disclosure that names the Group Artificial Intelligence Policy. Included on the same basis as the HSBC and JPMorgan model risk committees already in the graph. The disclosure does not state that AI oversight is explicitly within its remit, so this is weaker than the Goldman Sachs AI-specific committee."@en ;
+                                 rdfs:label "CBA Model Risk Governance Committee (MRGC)"@en .
+
+:CBAObservedResponsibleAI rdf:type owl:NamedIndividual ,
+                                  :ResponsibleAI ;
+                         rdfs:label "CBA observed responsible AI concept"@en .
+
+:CBAResponsibleAITermUsage rdf:type owl:NamedIndividual ,
+                                   :TerminologyUsage ;
+                          :denotesConcept :CBAObservedResponsibleAI ;
+                          :observedInDocument :CBA2024AnnualReport ;
+                          :usedByActor :CommonwealthBank ;
+                          :usesTerminology "Responsible AI" ;
+                          :hasEvidence :CBA2024ResponsibleAIToolkitEvidence ;
+                          rdfs:label "CBA use of 'Responsible AI'"@en .
+
+:CBAResponsibleAIToolkit2024 rdf:type owl:NamedIndividual ,
+                                     :AIGovernanceFramework ;
+                            :hasEvidence :CBA2024ResponsibleAIToolkitEvidence ;
+                            :usesTerminology "Responsible AI toolkit" ;
+                            rdfs:label "CBA Responsible AI Toolkit"@en .
+
+:CBAResponsibleAIUse2024 rdf:type owl:NamedIndividual ,
+                                  :GovernanceProcess ;
+                         :hasEvidence :CBA2024ResponsibleAIToolkitEvidence ;
+                         rdfs:label "CBA Responsible AI Use Process"@en .
+
+:EUAIActAISystemDefinition rdf:type owl:NamedIndividual ,
+                                    :DefinitionStatement ;
+                           :definesConcept :AISystem ;
+                           :definitionText "'AI system' means a machine-based system that is designed to operate with varying levels of autonomy and that may exhibit adaptiveness after deployment, and that, for explicit or implicit objectives, infers, from the input it receives, how to generate outputs such as predictions, content, recommendations, or decisions that can influence physical or virtual environments" ;
+                           :hasEvidence :EUAIActDefinitionEvidence ;
+                           :statedBy :EU_AI_Act ;
+                           rdfs:label "EU AI Act definition of 'AI system'"@en .
+
+:EUAIActArticle10DataGovernance rdf:type owl:NamedIndividual ,
+                                         :DataGovernance ;
+                                :hasEvidence :EUAIActArticle10DataGovernanceEvidence ;
+                                rdfs:comment "Article 10 requires training, validation, and testing data for high-risk AI systems to meet stated quality criteria and be subject to appropriate governance and management practices."@en ;
+                                rdfs:label "EU AI Act Article 10 data-governance requirement"@en .
+
+:EUAIActArticle13Transparency rdf:type owl:NamedIndividual ,
+                                       :ExplainabilityObligation ;
+                              :hasEvidence :EUAIActArticle13Evidence ;
+                              rdfs:label "EU AI Act Article 13 transparency and provision of information to deployers"@en .
+
+:EUAIActArticle14HumanOversight rdf:type owl:NamedIndividual ,
+                                        :HumanOversight ;
+                               :hasEvidence :EUAIActArticle14HumanOversightEvidence ;
+                               rdfs:comment "Article 14 requires high-risk AI systems to support effective oversight by natural persons while the systems are in use."@en ;
+                               rdfs:label "EU AI Act Article 14 human-oversight requirement"@en .
+
+:EUAIActArticle43ConformityAssessment rdf:type owl:NamedIndividual ,
+                                              :ConformityAssessment ;
+                                     :hasEvidence :EUAIActArticle43ConformityAssessmentEvidence ;
+                                     rdfs:comment "Article 43 sets the conformity-assessment procedures providers must use to demonstrate compliance for specified high-risk AI systems."@en ;
+                                     rdfs:label "EU AI Act Article 43 conformity-assessment requirement"@en .
+
+:EUAIActHighRiskTier rdf:type owl:NamedIndividual ,
+                              :HighRiskTier ;
+                     :hasEvidence :EUAIActHighRiskEvidence ;
+                     rdfs:comment "EU AI Act classification; compare with the separately recorded JPMorgan 2025 model-tiering language without asserting equivalence."@en ;
+                     rdfs:label "EU AI Act high-risk AI system classification"@en .
+
+:GoldmanArtificialIntelligenceRiskAndControlsCommittee rdf:type owl:NamedIndividual ,
+                                                               :AIGovernanceBody ;
+                                                      :hasEvidence :Goldman2024AICommitteeEvidence ;
+                                                      rdfs:label "Goldman Sachs Firmwide Artificial Intelligence Risk and Controls Committee"@en .
+
+:GoldmanModelRiskTermUsage rdf:type owl:NamedIndividual ,
+                                   :TerminologyUsage ;
+                          :denotesConcept :GoldmanObservedModelRisk ;
+                          :observedInDocument :GoldmanSachs2024Form10KHTML ;
+                          :usedByActor :GoldmanSachs ;
+                          :usesTerminology "model risk" ;
+                          :hasEvidence :Goldman2024ModelRiskEvidence ;
+                          rdfs:label "Goldman Sachs use of 'model risk'"@en .
+
+:GoldmanObservedModelRisk rdf:type owl:NamedIndividual ,
+                                  :ModelRisk ;
+                         rdfs:label "Goldman Sachs observed model risk concept"@en .
+
+:HSBCAIModelReview2024 rdf:type owl:NamedIndividual ,
+                                :ModelValidation ;
+                       :hasEvidence :HSBC2024AIModelReviewEvidence ;
+                       rdfs:label "HSBC AI Model Review and Monitoring"@en .
+
+:HSBCAIModelRiskFramework2024 rdf:type owl:NamedIndividual ,
+                                      :AIGovernanceFramework ;
+                             :hasEvidence :HSBC2024AIModelReviewEvidence ;
+                             :usesTerminology "governance framework" ;
+                             rdfs:label "HSBC AI and Machine Learning Model Risk Framework"@en .
+
+:HSBCBiasTermUsage rdf:type owl:NamedIndividual ,
+                            :TerminologyUsage ;
+                   :denotesConcept :HSBCObservedAlgorithmicBias ;
+                   :observedInDocument :HSBCPrinciplesDocument ;
+                   :usedByActor :HSBC ;
+                   :usesTerminology "unfair bias and decision-making" ;
+                   :hasEvidence :HSBCPrinciplesBiasEvidence ;
+                   rdfs:label "HSBC use of 'unfair bias and decision-making'"@en .
+
+:HSBCExplainabilityTermUsage rdf:type owl:NamedIndividual ,
+                                      :TerminologyUsage ;
+                             :denotesConcept :HSBCObservedExplainability ;
+                             :observedInDocument :HSBCPrinciplesDocument ;
+                             :usedByActor :HSBC ;
+                             :usesTerminology "explainable" ;
+                             :hasEvidence :HSBCPrinciplesExplainabilityEvidence ;
+                             rdfs:label "HSBC use of 'explainable'"@en .
+
+:HSBCModelRiskCommittees2024 rdf:type owl:NamedIndividual ,
+                                     :AIGovernanceBody ;
+                            :hasEvidence :HSBC2024ModelRiskCommitteeEvidence ;
+                            rdfs:label "HSBC Model Risk Governance Committees"@en .
+
+:HSBCModelRiskTermUsage rdf:type owl:NamedIndividual ,
+                                :TerminologyUsage ;
+                       :denotesConcept :HSBCObservedModelRisk ;
+                       :observedInDocument :HSBC2024AnnualReport ;
+                       :usedByActor :HSBC ;
+                       :usesTerminology "model risk" ;
+                       :hasEvidence :HSBC2024ModelRiskCommitteeEvidence ;
+                       rdfs:label "HSBC use of 'model risk'"@en .
+
+:HSBCObservedAlgorithmicBias rdf:type owl:NamedIndividual ,
+                                      :AlgorithmicBias ;
+                             :hasEvidence :HSBCPrinciplesBiasEvidence ;
+                             rdfs:label "HSBC observed unfair-bias risk concept"@en .
+
+:HSBCObservedExplainability rdf:type owl:NamedIndividual ,
+                                     :Explainability ;
+                            :hasEvidence :HSBCPrinciplesExplainabilityEvidence ;
+                            rdfs:label "HSBC observed explainability principle"@en .
+
+:HSBCObservedModelRisk rdf:type owl:NamedIndividual ,
+                               :ModelRisk ;
+                      rdfs:label "HSBC observed model risk concept"@en .
+
+:HSBCPrinciplesEthicalUseOfDataAndAI rdf:type owl:NamedIndividual ,
+                                              :AIGovernancePolicy ;
+                                     :hasEvidence :HSBCPrinciplesEvidence ;
+                                     :policyURL "https://www.hsbc.com/ai" ;
+                                     rdfs:comment "Named and published by HSBC, and cited by URL in the annual report. Whether a set of published principles meets the project's 'formal AI governance policy' threshold is the same open question the supervisor was already asked to settle for CBA's public approach page."@en ;
+                                     rdfs:label "HSBC Principles for the Ethical Use of Data and AI"@en .
+
+:HSBCPrinciplesEthicalUseOfDataAndAI
+    :addressesRisk :HSBCObservedAlgorithmicBias ;
+    :embodiesPrinciple :HSBCObservedExplainability .
+
+:HSBCThirdPartyAIGovernance rdf:type owl:NamedIndividual ,
+                                     :ThirdPartyAIGovernance ;
+                            :hasEvidence :HSBCPrinciplesThirdPartyEvidence ,
+                                         :HSBCThirdPartyAIEvidence ;
+                            rdfs:label "HSBC governance and controls for externally enabled AI"@en .
+
+:JPMorganModelReviewApproval2024 rdf:type owl:NamedIndividual ,
+                                         :ModelValidation ;
+                                :hasEvidence :JPMorgan2024ModelRiskEvidence ;
+                                rdfs:label "JPMorgan Model Review and Approval"@en .
+
+:JPMorganModelRiskGovernanceAndReview rdf:type owl:NamedIndividual ,
+                                              :AIGovernanceBody ;
+                                     :hasEvidence :JPMorgan2024ModelRiskEvidence ;
+                                     rdfs:label "JPMorgan Model Risk Governance and Review"@en ;
+                                     skos:altLabel "MRGR"@en .
+
+:JPMorganModelRiskGovernanceFramework2024 rdf:type owl:NamedIndividual ,
+                                                  :AIGovernanceFramework ;
+                                         :hasEvidence :JPMorgan2024ModelRiskEvidence ;
+                                         rdfs:label "JPMorgan Model Risk Governance Framework"@en .
+
+:JPMorganModelRiskTermUsage rdf:type owl:NamedIndividual ,
+                                    :TerminologyUsage ;
+                           :denotesConcept :JPMorganObservedModelRisk ;
+                           :observedInDocument :JPMorgan2024AnnualReport ;
+                           :usedByActor :JPMorganChase ;
+                           :usesTerminology "Estimations and Model risk" ;
+                           :hasEvidence :JPMorgan2024ModelRiskEvidence ;
+                           rdfs:label "JPMorgan use of 'Estimations and Model risk'"@en .
+
+:JPMorganObservedModelRisk rdf:type owl:NamedIndividual ,
+                                   :ModelRisk ;
+                          rdfs:label "JPMorgan observed estimations and model risk concept"@en .
+
+:NABDataEthicsThirdPartyGovernance rdf:type owl:NamedIndividual ,
+                                            :ThirdPartyAIGovernance ;
+                                   :hasEvidence :NABThirdPartyAIEvidence ;
+                                   rdfs:comment "Weaker than the HSBC finding. NAB's statement governs data shared with third parties in an AI and machine-learning context, rather than governance of third-party AI systems as such. Retained because competency question 9 asks which firms address third-party AI vendor governance at all, but it should not be read as an equivalent commitment."@en ;
+                                   rdfs:label "NAB Data Ethics Principles covering AI and third-party data sharing"@en .
+
+:NABGenerativeAIGovernanceMeasures2024 rdf:type owl:NamedIndividual ,
+                                               :AIGovernanceFramework ;
+                                      :hasEvidence :NAB2024AIGovernanceEvidence ;
+                                      :usesTerminology "ethical guidelines and protocols" ;
+                                      rdfs:label "NAB Generative AI Governance Measures"@en .
+
+:NABGenerativeAIOperationalRisk rdf:type owl:NamedIndividual ,
+                                        :GenerativeAIRisk ;
+                               rdfs:label "NAB generative AI operational risk"@en .
+
+:NABGenerativeAIRiskTermUsage rdf:type owl:NamedIndividual ,
+                                      :TerminologyUsage ;
+                             :denotesConcept :NABGenerativeAIOperationalRisk ;
+                             :observedInDocument :NAB2024AnnualReport ;
+                             :usedByActor :NAB ;
+                             :usesTerminology "Generative AI is an emerging area of operational risk" ;
+                             :hasEvidence :NAB2024GenerativeAIRiskEvidence ;
+                             rdfs:label "NAB use of 'Generative AI ... operational risk'"@en .
+
+:NABGenerativeAITestingAndOversight2024 rdf:type owl:NamedIndividual ,
+                                                 :GovernanceProcess ;
+                                        :hasEvidence :NAB2024AIGovernanceEvidence ;
+                                        rdfs:label "NAB Generative AI Testing and Oversight"@en .
+
+:NISTAIRMFExplainability rdf:type owl:NamedIndividual ,
+                                  :ExplainabilityObligation ;
+                         :hasEvidence :NISTAIRMFExplainabilityEvidence ;
+                         rdfs:comment "NIST AI RMF is a voluntary framework, so this is a recommended trustworthiness characteristic rather than a binding legal obligation. Recorded here because competency question 3 asks which frameworks require explainability, and the comparison is only meaningful if the voluntary/binding distinction is visible."@en ;
+                         rdfs:label "NIST AI RMF explainable and interpretable characteristic"@en .
+
+:NISTAISystemDefinition rdf:type owl:NamedIndividual ,
+                                 :DefinitionStatement ;
+                        :definesConcept :AISystem ;
+                        :definitionText "an engineered or machine-based system that can, for a given set of objectives, generate outputs such as predictions, recommendations, or decisions influencing real or virtual environments. AI systems are designed to operate with varying levels of autonomy" ;
+                        :hasEvidence :NISTAIRMFDefinitionEvidence ;
+                        :statedBy :NIST_AI_RMF ;
+                        rdfs:comment "NIST attributes this wording to the OECD Recommendation on AI (2019) and ISO/IEC 22989:2022, so the NIST and EU definitions share an ancestor. Both centre on a machine-based system generating outputs at varying levels of autonomy; the EU adds post-deployment adaptiveness and explicit or implicit objectives."@en ;
+                        rdfs:label "NIST AI RMF definition of 'AI system'"@en .
+
+:WestpacAISystemDefinition rdf:type owl:NamedIndividual ,
+                                    :DefinitionStatement ;
+                           :definesConcept :AISystem ;
+                           :definitionText "A machine-based system designed to operate with varying levels of autonomy and that may exhibit adaptiveness after deployment and that, for explicit or implicit objectives, infers, from the input it receives, how to generate outputs such as predictions, content, recommendations, or decisions that can influence physical or virtual environments." ;
+                           :hasEvidence :WestpacAIDefinitionEvidence ;
+                           :statedBy :Westpac ;
+                           rdfs:comment "The first firm-stated definition of AI collected in this study. The wording is that of EU AI Act Article 3(1) with only punctuation and connective differences, yet the page cites no source for it. This is the clearest single instance of the unattributed adoption pattern the comparative analysis reports."@en ;
+                           rdfs:label "Westpac definition of 'AI'"@en .
+
+:WestpacExplainabilityTermUsage rdf:type owl:NamedIndividual ,
+                                         :TerminologyUsage ;
+                                :denotesConcept :WestpacObservedExplainability ;
+                                :observedInDocument :WestpacAIPolicyPage ;
+                                :usedByActor :Westpac ;
+                                :usesTerminology "Transparency and Explainability" ;
+                                :hasEvidence :WestpacExplainabilityEvidence ;
+                                rdfs:label "Westpac use of 'Transparency and Explainability'"@en .
+
+:WestpacObservedExplainability rdf:type owl:NamedIndividual ,
+                                        :Explainability ;
+                               rdfs:label "Westpac observed explainability principle"@en .
+
+:WestpacObservedResponsibleAI rdf:type owl:NamedIndividual ,
+                                      :ResponsibleAI ;
+                             rdfs:label "Westpac observed responsible AI concept"@en .
+
+:WestpacResponsibleAIPiloting2024 rdf:type owl:NamedIndividual ,
+                                          :GovernanceProcess ;
+                                 :hasEvidence :Westpac2024AIPilotingEvidence ;
+                                 rdfs:label "Westpac Responsible AI Piloting"@en .
+
+:WestpacResponsibleAIPrinciples rdf:type owl:NamedIndividual ,
+                                         :AIGovernancePolicy ;
+                                :hasEvidence :WestpacResponsibleAIPrinciplesEvidence ;
+                                :policyURL "https://www.westpac.com.au/about-westpac/westpac-group/corporate-governance/artificial-intelligence-at-westpac/"^^xsd:anyURI ;
+                                rdfs:comment "Eight named principles published under Westpac's corporate governance section. The principle names and wording track Australia's AI Ethics Principles closely, but the page names no external framework, so no :referencesFramework assertion is made and competency question 7 keeps its zero-row result. The unattributed correspondence is recorded here rather than asserted as a citation."@en ;
+                                rdfs:label "Westpac Responsible AI Principles"@en .
+
+:WestpacResponsibleAIPrinciples :embodiesPrinciple :WestpacObservedExplainability .
+
+:WestpacResponsibleAITermUsage rdf:type owl:NamedIndividual ,
+                                       :TerminologyUsage ;
+                              :denotesConcept :WestpacObservedResponsibleAI ;
+                              :observedInDocument :Westpac2024AnnualReport ;
+                              :usedByActor :Westpac ;
+                              :usesTerminology "safely and responsibly" ;
+                              :hasEvidence :Westpac2024AIPilotingEvidence ;
+                              rdfs:label "Westpac responsible AI phrasing"@en .
+
+# Source documents
+
+:ANZ2024AnnualReport rdf:type owl:NamedIndividual ,
+                              :FirmAIGovernanceDisclosure ;
+                     :disclosesPractice :ANZModelMonitoringAndRevalidation ;
+                     :disclosesRisk :ANZObservedModelRisk ;
+                     :documentDate "2024" ;
+                     :documentType "Annual report" ;
+                     :documentURL "https://www.anz.com/content/dam/anzcom/shareholder/ANZGHL-2024-Annual%20Report.pdf"^^xsd:anyURI ;
+                     :localPath "corpus/firm-disclosures/anz/ANZ_2024_Annual_Report.pdf" ;
+                     :retrievalDate "2026-08-09"^^xsd:date ;
+                     :sha256 "57ee0908493317fe9cd3ad52dd09472870c6ded41fd45ff7794d165a9bc03b1a" ;
+                     rdfs:label "ANZ 2024 Annual Report"@en .
+
+:APRACPG234Document rdf:type owl:NamedIndividual ,
+                             :SourceDocument ;
+                    :documentType "Prudential practice guide" ;
+                    :documentURL "https://www.apra.gov.au/sites/default/files/cpg_234_information_security.pdf" ;
+                    :localPath "corpus/regulatory/apra/APRA_CPG234_Information_Security.pdf" ;
+                    :retrievalDate "2026-08-31"^^xsd:date ;
+                    :sha256 "38116fa7dc9c103e9c3e8931df389bf002f7d878040cb2c11f175a18125635dd" ;
+                    rdfs:comment "Full-text search of all 43 pages returned no occurrence of 'artificial intelligence', 'machine learning', or 'AI'. This is a vocabulary search finding only; it does not establish whether general information-security expectations apply to an AI deployment."@en ;
+                    rdfs:label "APRA CPG 234 Information Security"@en .
+
+:AUAIEthicsPrinciplesDocument rdf:type owl:NamedIndividual ,
+                                       :SourceDocument ;
+                              :documentDate "Published 7 November 2019; updated 2 December 2025" ;
+                              :documentType "Voluntary government framework web page" ;
+                              :documentURL "https://www.industry.gov.au/publications/australias-ai-ethics-principles"^^xsd:anyURI ;
+                              :localPath "corpus/regulatory/au-ai-ethics/AU_AI_Ethics_Principles.html" ;
+                              :retrievalDate "2026-09-07"^^xsd:date ;
+                              :sha256 "275fbd58c673e94d80ed4dfcd2e13e9d892f9e73a03ef7d843ba4ae819767281" ;
+                              rdfs:label "Australia's AI Ethics Principles"@en .
+
+:CBA2024AnnualReport rdf:type owl:NamedIndividual ,
+                              :FirmAIGovernanceDisclosure ;
+                     :disclosesPractice :CBAResponsibleAIUse2024 ;
+                     :documentDate "2024" ;
+                     :documentType "Annual report" ;
+                     :documentURL "https://www.commbank.com.au/content/dam/commbank-assets/investors/docs/results/fy24/CBA-2024-Annual-Report_print.pdf"^^xsd:anyURI ;
+                     :localPath "corpus/firm-disclosures/cba/CBA_2024_Annual_Report.pdf" ;
+                     :retrievalDate "2026-08-09"^^xsd:date ;
+                     :sha256 "181ef6e2683bad01f06551b97ae1f2b11b874e6c703d4760bdd11e92f41a625f" ;
+                     rdfs:label "Commonwealth Bank 2024 Annual Report"@en .
+
+:CBAArtificialIntelligenceApproachPage rdf:type owl:NamedIndividual ,
+                                                :FirmAIGovernanceDisclosure ;
+                                       :documentDate "Undated; retrieved 2026-08-09" ;
+                                       :documentType "Public AI approach web page" ;
+                                       :documentURL "https://www.commbank.com.au/about-us/opportunity-initiatives/policies-and-practices/artificial-intelligence.html"^^xsd:anyURI ;
+                                       :localPath "corpus/firm-disclosures/cba/CBA_Artificial_Intelligence_Approach.html" ;
+                                       :retrievalDate "2026-08-09"^^xsd:date ;
+                                       :sha256 "814c4a7a4bf59bac750cf64700081a5dc51838b12f17c2e20649981e91f89ca8" ;
+                                       rdfs:label "Commonwealth Bank Approach to Artificial Intelligence"@en .
+
+:EUAIActDocument rdf:type owl:NamedIndividual ,
+                          :SourceDocument ;
+                 :documentDate "2024" ;
+                 :documentType "Regulation" ;
+                 :documentURL "https://eur-lex.europa.eu/eli/reg/2024/1689/oj" ;
+                 :localPath "corpus/regulatory/eu-ai-act/EU_AI_Act_2024-1689.pdf" ;
+                 :retrievalDate "2026-08-31"^^xsd:date ;
+                 :sha256 "bba630444b3278e881066774002a1d7824308934f49ccfa203e65be43692f55e" ;
+                 rdfs:label "Regulation (EU) 2024/1689 (EU AI Act)"@en .
+
+:GoldmanSachs2024AnnualReport rdf:type owl:NamedIndividual ,
+                                      :FirmAIGovernanceDisclosure ;
+                             :documentDate "2024" ;
+                             :documentType "Annual report PDF filed with the SEC" ;
+                             :documentURL "https://www.sec.gov/Archives/edgar/data/886982/000119312525054427/d814482dars.pdf"^^xsd:anyURI ;
+                             :localPath "corpus/firm-disclosures/goldman-sachs/GoldmanSachs_2024_Annual_Report.pdf" ;
+                             :retrievalDate "2026-08-09"^^xsd:date ;
+                             :sha256 "f8bda9a9d862444c05e641cedffa43a3d3d442ec54fbfd2f6a11068903a8b653" ;
+                             rdfs:label "Goldman Sachs 2024 Annual Report"@en .
+
+:GoldmanSachs2024Form10KHTML rdf:type owl:NamedIndividual ,
+                                      :FirmAIGovernanceDisclosure ;
+                             :disclosesRisk :GoldmanObservedModelRisk ;
+                             :documentDate "2024" ;
+                             :documentType "SEC Form 10-K HTML filing" ;
+                             :documentURL "https://www.sec.gov/Archives/edgar/data/886982/000088698225000005/gs-20241231.htm"^^xsd:anyURI ;
+                             :localPath "corpus/firm-disclosures/goldman-sachs/GoldmanSachs_2024_Form10-K.html" ;
+                             :retrievalDate "2026-08-09"^^xsd:date ;
+                             :sha256 "8ca4f168a5b2554e745e04c1e36f410aa200116aedd1a9955533f696de1d5e87" ;
+                             rdfs:comment "Searchable official HTML copy retained because the annual-report PDF has a non-semantic text encoding."@en ;
+                             rdfs:label "Goldman Sachs 2024 Form 10-K HTML"@en .
+
+:HSBC2024AnnualReport rdf:type owl:NamedIndividual ,
+                              :FirmAIGovernanceDisclosure ;
+                     :disclosesPractice :HSBCAIModelReview2024 ;
+                     :disclosesRisk :HSBCObservedModelRisk ;
+                     :documentDate "2024" ;
+                     :documentType "Annual report and accounts" ;
+                     :documentURL "https://www.hsbc.com/-/files/hsbc/investors/hsbc-results/2024/annual/pdfs/hsbc-holdings-plc/250219-annual-report-and-accounts-2024.pdf"^^xsd:anyURI ;
+                     :localPath "corpus/firm-disclosures/hsbc/HSBC_2024_Annual_Report.pdf" ;
+                     :retrievalDate "2026-08-09"^^xsd:date ;
+                     :sha256 "c998d20da18afa770034b9c3506f25b68205bcbcd5e8444ea0f50157ee6689fb" ;
+                     rdfs:label "HSBC Annual Report and Accounts 2024"@en .
+
+:HSBC2024AnnualReport :disclosesPractice :HSBCThirdPartyAIGovernance .
+
+:HSBCPrinciplesDocument rdf:type owl:NamedIndividual ,
+                                 :FirmAIGovernanceDisclosure ;
+                        :disclosesPractice :HSBCThirdPartyAIGovernance ;
+                        :disclosesRisk :HSBCObservedAlgorithmicBias ;
+                        :documentDate "July 2024" ;
+                        :documentType "Published AI principles" ;
+                        :documentURL "https://www.hsbc.com/-/files/hsbc/our-approach/risk-and-responsibility/pdfs/240715-hsbc-principles-for-the-ethical-use-of-data-and-ai.pdf?download=1"^^xsd:anyURI ;
+                        :localPath "corpus/firm-disclosures/hsbc/HSBC_Principles_Ethical_Use_Data_AI_2024.pdf" ;
+                        :retrievalDate "2026-09-04"^^xsd:date ;
+                        :sha256 "0b0c126316e8d44f53ded2e4b33644b1b80eefe1a1fadafa236c2b3f2db39b9f" ;
+                        rdfs:comment "All ten pages were searched for NIST, ISO/IEC, the EU AI Act, OECD, AI RMF, and named international frameworks. No explicit framework reference was found, so the absence of :referencesFramework is a verified corpus finding rather than missing population."@en ;
+                        rdfs:label "HSBC Principles for the Ethical Use of Data and AI (July 2024)"@en .
+
+:JPMorgan2024AnnualReport rdf:type owl:NamedIndividual ,
+                                  :FirmAIGovernanceDisclosure ;
+                         :disclosesPractice :JPMorganModelReviewApproval2024 ;
+                         :disclosesRisk :JPMorganObservedModelRisk ;
+                         :documentDate "2024" ;
+                         :documentType "Annual report" ;
+                         :documentURL "https://www.jpmorganchase.com/content/dam/jpmc/jpmorgan-chase-and-co/investor-relations/documents/annualreport-2024.pdf"^^xsd:anyURI ;
+                         :localPath "corpus/firm-disclosures/jpmorgan/JPMorgan_2024_Annual_Report.pdf" ;
+                         :retrievalDate "2026-08-09"^^xsd:date ;
+                         :sha256 "78443e60b3188a70673ca7042d0bf9e4dc596d04072af729242886d22bd0a4e3" ;
+                         rdfs:label "JPMorgan Chase 2024 Annual Report"@en .
+
+:NAB2024AnnualReport rdf:type owl:NamedIndividual ,
+                              :FirmAIGovernanceDisclosure ;
+                     :disclosesPractice :NABGenerativeAITestingAndOversight2024 ;
+                     :disclosesRisk :NABGenerativeAIOperationalRisk ;
+                     :documentDate "2024" ;
+                     :documentType "Annual report" ;
+                     :documentURL "https://www.nab.com.au/content/dam/nab/documents/reports/corporate/2024-annual-report.pdf"^^xsd:anyURI ;
+                     :localPath "corpus/firm-disclosures/nab/NAB_2024_Annual_Report.pdf" ;
+                     :retrievalDate "2026-08-09"^^xsd:date ;
+                     :sha256 "c3ceeab05b174ddc4c2ced32e48f818e72a218365e3204990c3665f102125e1b" ;
+                     rdfs:label "NAB 2024 Annual Report"@en .
+
+:NAB2024AnnualReport :disclosesPractice :NABDataEthicsThirdPartyGovernance .
+
+:NISTAIRMFDocument rdf:type owl:NamedIndividual ,
+                            :SourceDocument ;
+                   :documentDate "2023" ;
+                   :documentType "Voluntary framework" ;
+                   :documentURL "https://nvlpubs.nist.gov/nistpubs/ai/NIST.AI.100-1.pdf" ;
+                   :localPath "corpus/regulatory/nist-ai-rmf/NIST_AI_RMF_1.0.pdf" ;
+                   :retrievalDate "2026-08-31"^^xsd:date ;
+                   :sha256 "7576edb531d9848825814ee88e28b1795d3a84b435b4b797d3670eafdc4a89f1" ;
+                   rdfs:label "NIST AI Risk Management Framework 1.0"@en .
+
+:Westpac2024AnnualReport rdf:type owl:NamedIndividual ,
+                                  :FirmAIGovernanceDisclosure ;
+                         :disclosesPractice :WestpacResponsibleAIPiloting2024 ;
+                         :documentDate "2024" ;
+                         :documentType "Accessible annual report" ;
+                         :documentURL "https://www.westpac.com.au/content/dam/public/wbc/documents/pdf/aw/ic/wbc-annual-report-accessible-2024.pdf"^^xsd:anyURI ;
+                         :localPath "corpus/firm-disclosures/westpac/Westpac_2024_Annual_Report_Accessible.pdf" ;
+                         :retrievalDate "2026-08-09"^^xsd:date ;
+                         :sha256 "66c63c3331f9d6af78523b5947e80774158dafd7e9078b5acb5d5b57a146228d" ;
+                         rdfs:label "Westpac 2024 Annual Report - Accessible"@en .
+
+:WestpacAIPolicyPage rdf:type owl:NamedIndividual ,
+                              :FirmAIGovernanceDisclosure ;
+                     :documentDate "Undated; retrieved 2026-09-07" ;
+                     :documentType "Public AI principles web page" ;
+                     :documentURL "https://www.westpac.com.au/about-westpac/westpac-group/corporate-governance/artificial-intelligence-at-westpac/"^^xsd:anyURI ;
+                     :localPath "corpus/firm-disclosures/westpac/Westpac_Artificial_Intelligence_At_Westpac.html" ;
+                     :retrievalDate "2026-09-07"^^xsd:date ;
+                     :sha256 "61ab6bc6ab5c6ba220bcbac227566ab5dc171524df1370fcf7312dec0d1d1fc4" ;
+                     rdfs:label "Artificial Intelligence at Westpac"@en .
+
+# Evidence snippets
+
+:ANZ2024AIGovernanceEvidence rdf:type owl:NamedIndividual ,
+                                     :EvidenceSnippet ;
+                            :confidenceLevel "high - manually verified" ;
+                            :exactText "ANZ is adapting our governance and risk management frameworks to ensure that AI is adopted safely" ;
+                            :extractedFrom :ANZ2024AnnualReport ;
+                            :extractionDate "2026-08-09"^^xsd:date ;
+                            :pageReference "PDF page 29 (report page 27)" ;
+                            :sectionReference "Artificial Intelligence (AI)" ;
+                            :supportsAssertion :ANZAIGovernanceFramework2024 ;
+                            rdfs:label "ANZ 2024 AI governance evidence"@en .
+
+:ANZ2024ModelRiskPolicyEvidence rdf:type owl:NamedIndividual ,
+                                        :EvidenceSnippet ;
+                               :confidenceLevel "high - manually verified" ;
+                               :exactText "The PD, LGD and EAD models are subject to the Group's model risk policy" ;
+                               :extractedFrom :ANZ2024AnnualReport ;
+                               :extractionDate "2026-08-09"^^xsd:date ;
+                               :pageReference "PDF page 139 (report page 137)" ;
+                               :sectionReference "Allowance for expected credit losses" ;
+                               :supportsAssertion :ANZModelRiskPolicy2024 ,
+                                                  :ANZModelMonitoringAndRevalidation ;
+                               rdfs:label "ANZ 2024 model risk policy evidence"@en .
+
+:AUAIEthicsExplainabilityEvidence rdf:type owl:NamedIndividual ,
+                                           :EvidenceSnippet ;
+                                  :confidenceLevel "high - manually verified" ;
+                                  :exactText "There should be transparency and responsible disclosure so people can understand when they are being significantly impacted by AI" ;
+                                  :extractedFrom :AUAIEthicsPrinciplesDocument ;
+                                  :extractionDate "2026-09-07"^^xsd:date ;
+                                  :pageReference "Not paginated" ;
+                                  :sectionReference "Transparency and explainability" ;
+                                  :supportsAssertion :AUAIEthicsExplainability ;
+                                  rdfs:label "Australian AI Ethics Principles explainability evidence"@en .
+
+:CBA2024ResponsibleAIToolkitEvidence rdf:type owl:NamedIndividual ,
+                                             :EvidenceSnippet ;
+                                    :confidenceLevel "high - manually verified" ;
+                                    :exactText "Launched the Responsible AI toolkit to help our people safely and fairly embed AI models in our operations." ;
+                                    :extractedFrom :CBA2024AnnualReport ;
+                                    :extractionDate "2026-08-09"^^xsd:date ;
+                                    :pageReference "PDF page 23 (report page 21)" ;
+                                    :sectionReference "Governance" ;
+                                    :supportsAssertion :CBAResponsibleAIToolkit2024 ;
+                                    rdfs:label "CBA 2024 Responsible AI toolkit evidence"@en .
+
+:CBAGroupAIPolicyEvidence rdf:type owl:NamedIndividual ,
+                                   :EvidenceSnippet ;
+                          :confidenceLevel "high - manually verified" ;
+                          :exactText "Group Artificial Intelligence Policy" ;
+                          :extractedFrom :CBA2024AnnualReport ;
+                          :extractionDate "2026-08-31"^^xsd:date ;
+                          :pageReference "PDF page 230" ;
+                          :sectionReference "Operational Risk, Governing Policies" ;
+                          :supportsAssertion :CBAGroupArtificialIntelligencePolicy ;
+                          rdfs:label "CBA Group AI Policy evidence"@en .
+
+:CBAModelRiskGovernanceCommitteeEvidence rdf:type owl:NamedIndividual ,
+                                                  :EvidenceSnippet ;
+                                         :confidenceLevel "medium - manually verified, AI remit not explicit" ;
+                                         :exactText "Model Risk Governance Committee (MRGC)" ;
+                                         :extractedFrom :CBA2024AnnualReport ;
+                                         :extractionDate "2026-08-31"^^xsd:date ;
+                                         :pageReference "PDF page 230" ;
+                                         :sectionReference "Operational Risk, Key Management Committee" ;
+                                         :supportsAssertion :CBAModelRiskGovernanceCommittee ;
+                                         rdfs:label "CBA Model Risk Governance Committee evidence"@en .
+
+:CBAPublishedAIApproachEvidence rdf:type owl:NamedIndividual ,
+                                        :EvidenceSnippet ;
+                               :confidenceLevel "high - manually verified" ;
+                               :exactText "we have developed six principles that are intended to help guide the application" ;
+                               :extractedFrom :CBAArtificialIntelligenceApproachPage ;
+                               :extractionDate "2026-08-09"^^xsd:date ;
+                               :pageReference "Not paginated" ;
+                               :sectionReference "Approach to Artificial Intelligence" ;
+                               :supportsAssertion :CBAArtificialIntelligenceApproach ;
+                               rdfs:label "CBA public AI approach evidence"@en .
+
+:EUAIActArticle10DataGovernanceEvidence rdf:type owl:NamedIndividual ,
+                                                 :EvidenceSnippet ;
+                                        :confidenceLevel "high - manually verified" ;
+                                        :exactText "Training, validation and testing data sets shall be subject to data governance and management practices appropriate for the intended purpose of the high-risk AI system." ;
+                                        :extractedFrom :EUAIActDocument ;
+                                        :extractionDate "2026-09-04"^^xsd:date ;
+                                        :pageReference "PDF page 57" ;
+                                        :sectionReference "Article 10" ;
+                                        :supportsAssertion :EUAIActArticle10DataGovernance ;
+                                        rdfs:label "EU AI Act Article 10 data-governance evidence"@en .
+
+:EUAIActArticle13Evidence rdf:type owl:NamedIndividual ,
+                                   :EvidenceSnippet ;
+                          :confidenceLevel "high - manually verified" ;
+                          :exactText "High-risk AI systems shall be designed and developed in such a way as to ensure that their operation is sufficiently transparent to enable deployers to interpret a system's output and use it appropriately." ;
+                          :extractedFrom :EUAIActDocument ;
+                          :extractionDate "2026-08-31"^^xsd:date ;
+                          :pageReference "PDF page 59" ;
+                          :sectionReference "Article 13" ;
+                          :supportsAssertion :EUAIActArticle13Transparency ;
+                          rdfs:label "EU AI Act Article 13 transparency evidence"@en .
+
+:EUAIActArticle14HumanOversightEvidence rdf:type owl:NamedIndividual ,
+                                                :EvidenceSnippet ;
+                                       :confidenceLevel "high - manually verified" ;
+                                       :exactText "High-risk AI systems shall be designed and developed in such a way, including with appropriate human-machine interface tools, that they can be effectively overseen by natural persons during the period in which they are in use." ;
+                                       :extractedFrom :EUAIActDocument ;
+                                       :extractionDate "2026-09-04"^^xsd:date ;
+                                       :pageReference "PDF page 60" ;
+                                       :sectionReference "Article 14" ;
+                                       :supportsAssertion :EUAIActArticle14HumanOversight ;
+                                       rdfs:label "EU AI Act Article 14 human-oversight evidence"@en .
+
+:EUAIActArticle43ConformityAssessmentEvidence rdf:type owl:NamedIndividual ,
+                                                      :EvidenceSnippet ;
+                                             :confidenceLevel "high - manually verified" ;
+                                             :exactText "providers shall follow the conformity assessment procedure based on internal control as referred to in Annex VI" ;
+                                             :extractedFrom :EUAIActDocument ;
+                                             :extractionDate "2026-09-04"^^xsd:date ;
+                                             :pageReference "PDF page 78" ;
+                                             :sectionReference "Article 43" ;
+                                             :supportsAssertion :EUAIActArticle43ConformityAssessment ;
+                                             rdfs:label "EU AI Act Article 43 conformity-assessment evidence"@en .
+
+:EUAIActDefinitionEvidence rdf:type owl:NamedIndividual ,
+                                    :EvidenceSnippet ;
+                           :confidenceLevel "high - manually verified" ;
+                           :exactText "'AI system' means a machine-based system that is designed to operate with varying levels of autonomy and that may exhibit adaptiveness after deployment" ;
+                           :extractedFrom :EUAIActDocument ;
+                           :extractionDate "2026-08-31"^^xsd:date ;
+                           :pageReference "PDF page 46" ;
+                           :sectionReference "Article 3(1) Definitions" ;
+                           :supportsAssertion :EUAIActAISystemDefinition ;
+                           rdfs:label "EU AI Act AI system definition evidence"@en .
+
+:EUAIActHighRiskEvidence rdf:type owl:NamedIndividual ,
+                                  :EvidenceSnippet ;
+                         :confidenceLevel "high - manually verified" ;
+                         :exactText "Article 6 Classification rules for high-risk AI systems" ;
+                         :extractedFrom :EUAIActDocument ;
+                         :extractionDate "2026-08-31"^^xsd:date ;
+                         :pageReference "PDF page 53" ;
+                         :sectionReference "Chapter III Section 1, Article 6" ;
+                         :supportsAssertion :EUAIActHighRiskTier ;
+                         rdfs:label "EU AI Act high-risk classification evidence"@en .
+
+:Goldman2024AICommitteeEvidence rdf:type owl:NamedIndividual ,
+                                        :EvidenceSnippet ;
+                               :confidenceLevel "high - manually verified in official SEC HTML" ;
+                               :exactText "the Firmwide Artificial Intelligence Risk and Controls Committee, which oversees risks associated with the use of AI" ;
+                               :extractedFrom :GoldmanSachs2024Form10KHTML ;
+                               :extractionDate "2026-08-09"^^xsd:date ;
+                               :pageReference "Form 10-K page 98" ;
+                               :sectionReference "Overview and Structure of Risk Management" ;
+                               :supportsAssertion :GoldmanArtificialIntelligenceRiskAndControlsCommittee ;
+                               rdfs:label "Goldman Sachs 2024 AI committee evidence"@en .
+
+:Goldman2024ModelRiskEvidence rdf:type owl:NamedIndividual ,
+                                      :EvidenceSnippet ;
+                             :confidenceLevel "high - manually verified in official SEC HTML" ;
+                             :exactText "Model risk is the potential for adverse consequences from decisions made based on model outputs" ;
+                             :extractedFrom :GoldmanSachs2024Form10KHTML ;
+                             :extractionDate "2026-08-09"^^xsd:date ;
+                             :pageReference "Form 10-K page 124" ;
+                             :sectionReference "Model Risk Management" ;
+                             :supportsAssertion :GoldmanObservedModelRisk ;
+                             rdfs:label "Goldman Sachs 2024 model risk evidence"@en .
+
+:HSBC2024AIModelReviewEvidence rdf:type owl:NamedIndividual ,
+                                       :EvidenceSnippet ;
+                              :confidenceLevel "high - manually verified" ;
+                              :exactText "Models using AI or generative AI techniques are reviewed by the relevant risk teams and monitored by the business" ;
+                              :extractedFrom :HSBC2024AnnualReport ;
+                              :extractionDate "2026-08-09"^^xsd:date ;
+                              :pageReference "PDF page 138 (report page 136)" ;
+                              :sectionReference "Model risk" ;
+                              :supportsAssertion :HSBCAIModelReview2024 ,
+                                                 :HSBCAIModelRiskFramework2024 ;
+                              rdfs:label "HSBC 2024 AI model review evidence"@en .
+
+:HSBC2024ModelRiskCommitteeEvidence rdf:type owl:NamedIndividual ,
+                                            :EvidenceSnippet ;
+                                   :confidenceLevel "high - manually verified" ;
+                                   :exactText "Model risk governance committees at the Group, business and functional levels provide oversight of model risk." ;
+                                   :extractedFrom :HSBC2024AnnualReport ;
+                                   :extractionDate "2026-08-09"^^xsd:date ;
+                                   :pageReference "PDF page 232 (report page 230)" ;
+                                   :sectionReference "Governance and structure" ;
+                                   :supportsAssertion :HSBCModelRiskCommittees2024 ;
+                                   rdfs:label "HSBC 2024 model risk committee evidence"@en .
+
+:HSBCPrinciplesBiasEvidence rdf:type owl:NamedIndividual ,
+                                     :EvidenceSnippet ;
+                            :confidenceLevel "high - manually verified" ;
+                            :exactText "Address unfair bias and decision-making" ;
+                            :extractedFrom :HSBCPrinciplesDocument ;
+                            :extractionDate "2026-09-04"^^xsd:date ;
+                            :pageReference "PDF page 6" ;
+                            :sectionReference "Principle 4" ;
+                            :supportsAssertion :HSBCObservedAlgorithmicBias ,
+                                               :HSBCBiasTermUsage ;
+                            rdfs:label "HSBC unfair-bias principle evidence"@en .
+
+:HSBCPrinciplesEvidence rdf:type owl:NamedIndividual ,
+                                 :EvidenceSnippet ;
+                        :confidenceLevel "high - manually verified" ;
+                        :exactText "HSBC's Principles for the Ethical Use of Data and AI are available at www.hsbc.com/ai." ;
+                        :extractedFrom :HSBC2024AnnualReport ;
+                        :extractionDate "2026-08-31"^^xsd:date ;
+                        :pageReference "PDF page 40" ;
+                        :sectionReference "Strategic Report" ;
+                        :supportsAssertion :HSBCPrinciplesEthicalUseOfDataAndAI ;
+                        rdfs:label "HSBC AI principles evidence"@en .
+
+:HSBCPrinciplesExplainabilityEvidence rdf:type owl:NamedIndividual ,
+                                               :EvidenceSnippet ;
+                                      :confidenceLevel "high - manually verified" ;
+                                      :exactText "ensuring that they are explainable" ;
+                                      :extractedFrom :HSBCPrinciplesDocument ;
+                                      :extractionDate "2026-09-04"^^xsd:date ;
+                                      :pageReference "PDF page 7" ;
+                                      :sectionReference "Principle 5" ;
+                                      :supportsAssertion :HSBCObservedExplainability ,
+                                                         :HSBCExplainabilityTermUsage ;
+                                      rdfs:label "HSBC explainability principle evidence"@en .
+
+:HSBCPrinciplesThirdPartyEvidence rdf:type owl:NamedIndividual ,
+                                           :EvidenceSnippet ;
+                                  :confidenceLevel "high - manually verified" ;
+                                  :exactText "third parties in relation to data and AI" ;
+                                  :extractedFrom :HSBCPrinciplesDocument ;
+                                  :extractionDate "2026-09-04"^^xsd:date ;
+                                  :pageReference "PDF page 8" ;
+                                  :sectionReference "Principle 6" ;
+                                  :supportsAssertion :HSBCThirdPartyAIGovernance ;
+                                  rdfs:label "HSBC policy third-party AI governance evidence"@en .
+
+:HSBCThirdPartyAIEvidence rdf:type owl:NamedIndividual ,
+                                   :EvidenceSnippet ;
+                          :confidenceLevel "high - manually verified" ;
+                          :exactText "We continue to refine and embed governance and controls into our risk management processes to help meet the Group's needs and increasing regulatory expectations for when AI is both developed internally and enabled through third parties." ;
+                          :extractedFrom :HSBC2024AnnualReport ;
+                          :extractionDate "2026-08-31"^^xsd:date ;
+                          :pageReference "PDF page 40" ;
+                          :sectionReference "Strategic Report" ;
+                          :supportsAssertion :HSBCThirdPartyAIGovernance ;
+                          rdfs:label "HSBC third-party AI governance evidence"@en .
+
+:JPMorgan2024ModelRiskEvidence rdf:type owl:NamedIndividual ,
+                                       :EvidenceSnippet ;
+                              :confidenceLevel "high - manually verified" ;
+                              :exactText "Users and developers of models are responsible for developing, implementing and testing their models, as well as referring models to MRGR for review and approval." ;
+                              :extractedFrom :JPMorgan2024AnnualReport ;
+                              :extractionDate "2026-08-09"^^xsd:date ;
+                              :pageReference "PDF page 194 (Form 10-K page 160)" ;
+                              :sectionReference "Estimations and Model Risk Management" ;
+                              :supportsAssertion :JPMorganModelRiskGovernanceAndReview ,
+                                                 :JPMorganModelReviewApproval2024 ;
+                              rdfs:label "JPMorgan 2024 model risk governance evidence"@en .
+
+:NAB2024AIGovernanceEvidence rdf:type owl:NamedIndividual ,
+                                     :EvidenceSnippet ;
+                            :confidenceLevel "high - manually verified" ;
+                            :exactText "NAB has implemented several measures to ensure the safe and responsible use of Generative AI" ;
+                            :extractedFrom :NAB2024AnnualReport ;
+                            :extractionDate "2026-08-09"^^xsd:date ;
+                            :pageReference "PDF page 51 (report page 47)" ;
+                            :sectionReference "Generative AI" ;
+                            :supportsAssertion :NABGenerativeAIGovernanceMeasures2024 ,
+                                               :NABGenerativeAITestingAndOversight2024 ;
+                            rdfs:label "NAB 2024 generative AI governance evidence"@en .
+
+:NAB2024GenerativeAIRiskEvidence rdf:type owl:NamedIndividual ,
+                                          :EvidenceSnippet ;
+                                 :confidenceLevel "high - manually verified" ;
+                                 :exactText "Generative AI is an emerging area of operational risk." ;
+                                 :extractedFrom :NAB2024AnnualReport ;
+                                 :extractionDate "2026-08-09"^^xsd:date ;
+                                 :pageReference "PDF page 103 (report page 99)" ;
+                                 :sectionReference "Operational risk" ;
+                                 :supportsAssertion :NABGenerativeAIOperationalRisk ;
+                                 rdfs:label "NAB 2024 generative AI risk evidence"@en .
+
+:NABThirdPartyAIEvidence rdf:type owl:NamedIndividual ,
+                                  :EvidenceSnippet ;
+                         :confidenceLevel "medium - manually verified, indirect" ;
+                         :exactText "a suite of Data Ethics Principles that set out how we should responsibly use data and guides how data is used in analytics, machine learning, AI and shared with third parties. These Data Ethics Principles are embedded in a Data Ethics assessment process." ;
+                         :extractedFrom :NAB2024AnnualReport ;
+                         :extractionDate "2026-08-31"^^xsd:date ;
+                         :pageReference "PDF page 51" ;
+                         :sectionReference "Data Ethics" ;
+                         :supportsAssertion :NABDataEthicsThirdPartyGovernance ;
+                         rdfs:label "NAB third-party AI data governance evidence"@en .
+
+:NISTAIRMFDefinitionEvidence rdf:type owl:NamedIndividual ,
+                                      :EvidenceSnippet ;
+                             :confidenceLevel "high - manually verified" ;
+                             :exactText "The AI RMF refers to an AI system as an engineered or machine-based system that can, for a given set of objectives, generate outputs such as predictions, recommendations, or decisions influencing real or virtual environments." ;
+                             :extractedFrom :NISTAIRMFDocument ;
+                             :extractionDate "2026-08-31"^^xsd:date ;
+                             :pageReference "PDF page 6" ;
+                             :sectionReference "Section 1 Framing Risk" ;
+                             :supportsAssertion :NISTAISystemDefinition ;
+                             rdfs:label "NIST AI RMF AI system definition evidence"@en .
+
+:NISTAIRMFExplainabilityEvidence rdf:type owl:NamedIndividual ,
+                                          :EvidenceSnippet ;
+                                 :confidenceLevel "high - manually verified" ;
+                                 :exactText "Explainability refers to a representation of the mechanisms underlying AI systems' operation, whereas interpretability refers to the meaning of AI systems' output in the context of their designed functional purposes." ;
+                                 :extractedFrom :NISTAIRMFDocument ;
+                                 :extractionDate "2026-08-31"^^xsd:date ;
+                                 :pageReference "PDF page 21" ;
+                                 :sectionReference "Section 3.5 Explainable and Interpretable" ;
+                                 :supportsAssertion :NISTAIRMFExplainability ;
+                                 rdfs:label "NIST AI RMF explainability evidence"@en .
+
+:Westpac2024AIPilotingEvidence rdf:type owl:NamedIndividual ,
+                                       :EvidenceSnippet ;
+                              :confidenceLevel "high - manually verified" ;
+                              :exactText "We are actively piloting several test use cases safely and responsibly to improve our operations and service to customers." ;
+                              :extractedFrom :Westpac2024AnnualReport ;
+                              :extractionDate "2026-08-09"^^xsd:date ;
+                              :pageReference "PDF page 7 (report page 7)" ;
+                              :sectionReference "Artificial Intelligence (AI)" ;
+                              :supportsAssertion :WestpacResponsibleAIPiloting2024 ;
+                              rdfs:label "Westpac 2024 responsible AI piloting evidence"@en .
+
+:WestpacAIDefinitionEvidence rdf:type owl:NamedIndividual ,
+                                      :EvidenceSnippet ;
+                             :confidenceLevel "high - manually verified" ;
+                             :exactText "A machine-based system designed to operate with varying levels of autonomy and that may exhibit adaptiveness after deployment" ;
+                             :extractedFrom :WestpacAIPolicyPage ;
+                             :extractionDate "2026-09-07"^^xsd:date ;
+                             :pageReference "Not paginated" ;
+                             :sectionReference "Our definition of AI" ;
+                             :supportsAssertion :WestpacAISystemDefinition ;
+                             rdfs:label "Westpac AI definition evidence"@en .
+
+:WestpacExplainabilityEvidence rdf:type owl:NamedIndividual ,
+                                        :EvidenceSnippet ;
+                               :confidenceLevel "high - manually verified" ;
+                               :exactText "There should be transparency and responsible disclosure so people can understand when they are being significantly impacted by AI and know when an AI system is engaging with them" ;
+                               :extractedFrom :WestpacAIPolicyPage ;
+                               :extractionDate "2026-09-07"^^xsd:date ;
+                               :pageReference "Not paginated" ;
+                               :sectionReference "Our Responsible AI Principles" ;
+                               :supportsAssertion :WestpacObservedExplainability ,
+                                                  :WestpacExplainabilityTermUsage ;
+                               rdfs:label "Westpac explainability principle evidence"@en .
+
+:WestpacResponsibleAIPrinciplesEvidence rdf:type owl:NamedIndividual ,
+                                                 :EvidenceSnippet ;
+                                        :confidenceLevel "high - manually verified" ;
+                                        :exactText "Westpac adheres to a set of eight Responsible AI Principles to guide the design, delivery, deployment and use of AI systems" ;
+                                        :extractedFrom :WestpacAIPolicyPage ;
+                                        :extractionDate "2026-09-07"^^xsd:date ;
+                                        :pageReference "Not paginated" ;
+                                        :sectionReference "Artificial Intelligence at Westpac" ;
+                                        :supportsAssertion :WestpacResponsibleAIPrinciples ;
+                                        rdfs:label "Westpac Responsible AI Principles evidence"@en .
+
+# Corpus expansion (2026-09-22)
+@prefix : <https://w3id.org/ai-finance-governance#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# Expansion vocabulary
+
+:GovernanceStatement a owl:Class ;
+    rdfs:label "Evidence-backed governance statement"@en ;
+    rdfs:comment "A scoped source assertion. Distinguishes published commitments, report findings, guidance and consultation positions; does not establish implementation or compliance."@en ;
+    rdfs:subClassOf :GovernanceArtifact .
+
+:hasStatement a owl:ObjectProperty ;
+    rdfs:label "has governance statement"@en ;
+    rdfs:range :GovernanceStatement .
+
+:statementStatus a owl:DatatypeProperty ;
+    rdfs:label "statement status"@en ;
+    rdfs:domain :GovernanceStatement ;
+    rdfs:range xsd:string .
+
+:statementText a owl:DatatypeProperty ;
+    rdfs:label "statement summary"@en ;
+    rdfs:domain :GovernanceStatement ;
+    rdfs:range xsd:string .
+
+:statementTopic a owl:DatatypeProperty ;
+    rdfs:label "statement topic"@en ;
+    rdfs:domain :GovernanceStatement ;
+    rdfs:range xsd:string .
+
+# Expansion institutions and regulatory frameworks
+
+:ANZ :hasGovernanceDisclosure :ANZ2025AnnualReport,
+        :ANZGuardrailsSubmission2024,
+        :ANZHomeLoanAutomation2024 ;
+    :hasStatement :ANZGuardrailsChallengeStatement,
+        :ANZGuardrailsEUReferenceStatement,
+        :ANZGuardrailsFairnessStatement,
+        :ANZGuardrailsJurisdictionStatement,
+        :ANZHomeLoanEthicsStatement,
+        :ANZModelPolicy2025Statement .
+
+:APRA_CPG234 dcterms:source :APRACPG234Document .
+
+:ASIC_REP798 a owl:NamedIndividual,
+        :RegulatoryFramework ;
+    rdfs:label "ASIC REP 798"@en ;
+    dcterms:source :ASICREP798Document ;
+    :hasStatement :ASIC798DocumentationStatement,
+        :ASIC798GovernanceGapStatement,
+        :ASIC798ThirdPartiesStatement ;
+    :jurisdiction "Australia" .
+
+:ASIC_RG271 dcterms:source :ASICRG271Document ;
+    :hasStatement :ASICComplaintReasonsStatement,
+        :ASICComplaintTimeframeStatement .
+
+:AU_AI_Adoption a owl:NamedIndividual,
+        :RegulatoryFramework ;
+    rdfs:label "Australian AI Adoption Guidance"@en ;
+    dcterms:source :AUGuidance2026Document ;
+    :hasStatement :AUAccountabilityStatement,
+        :AUSupplierAccountabilityStatement ;
+    :jurisdiction "Australia" .
+
+:CommonwealthBank :hasGovernanceBody :CBAAIRiskCommittee2025 ;
+    :hasGovernanceDisclosure :CBA2025AnnualReport ;
+    :hasStatement :CBAAICommittee2025Statement,
+        :CBAAISystemDefinitionStatement,
+        :CBAAccountabilityStatement,
+        :CBAFairnessStatement,
+        :CBAHumanOversightStatement,
+        :CBAPrivacyStatement,
+        :CBAReliabilityStatement,
+        :CBARiskDefinition2025Statement,
+        :CBAToolkit2025Statement,
+        :CBATransparencyStatement .
+
+:EU_AI_Act dcterms:source :EUAIActDocument ;
+    :hasStatement :EUCreditworthinessStatement,
+        :EUDocumentationStatement,
+        :EUExplanationStatement,
+        :EUTerritorialScopeStatement .
+
+:FSB_AI_2024 a owl:NamedIndividual,
+        :RegulatoryFramework ;
+    rdfs:label "FSB AI 2024"@en ;
+    dcterms:source :FSBAI2024Document ;
+    :hasStatement :FSBConcentration2024Statement,
+        :FSBModelRisk2024Statement ;
+    :jurisdiction "International" .
+
+:FSB_AI_2025 a owl:NamedIndividual,
+        :RegulatoryFramework ;
+    rdfs:label "FSB AI 2025"@en ;
+    dcterms:source :FSBAI2025Document ;
+    :hasStatement :FSBMonitoring2025Statement ;
+    :jurisdiction "International" .
+
+:GoldmanSachs :hasGovernanceDisclosure :GoldmanSachs2025AnnualReport ;
+    :hasStatement :GoldmanOversight2025Statement .
+
+:HSBC :hasGovernanceDisclosure :HSBC2025AnnualReport ;
+    :hasStatement :HSBCAccountabilityStatement,
+        :HSBCBiasStatement,
+        :HSBCChallengeStatement,
+        :HSBCDataMinimisationStatement,
+        :HSBCEscalationStatement,
+        :HSBCMonitoringStatement,
+        :HSBCPrivacy2025Statement,
+        :HSBCPrivacyStatement,
+        :HSBCSupplierPrivacyStatement,
+        :HSBCTestingStatement,
+        :HSBCTrainingStatement .
+
+:JPMorganChase :hasApprovalProcess :JPMorganModelReviewApproval2025 ;
+    :hasGovernanceDisclosure :JPMorgan2025AnnualReport ;
+    :hasStatement :JPMorganApproval2025Statement,
+        :JPMorganTiering2025Statement .
+
+:MAS_AIRM dcterms:source :MASAIRiskToolkitRelease2026 ;
+    :hasStatement :MASConsultationStatusStatement .
+
+:NAB :hasGovernanceDisclosure :NAB2025AnnualReport ;
+    :hasStatement :NABAssessment2025Statement,
+        :NABFramework2025Statement,
+        :NABFrameworkReference2024Statement,
+        :NABHumanRights2024Statement .
+
+:NIST_AI_RMF dcterms:source :NISTAIRMFDocument .
+
+:NIST_GenAI_Profile a owl:NamedIndividual,
+        :RegulatoryFramework ;
+    rdfs:label "NIST GenAI Profile"@en ;
+    dcterms:source :NISTGenAIProfileDocument ;
+    :hasStatement :NISTGenAIInventoryStatement,
+        :NISTGenAISupplierStatement ;
+    :jurisdiction "United States" .
+
+:OAIC_AI_Privacy a owl:NamedIndividual,
+        :RegulatoryFramework ;
+    rdfs:label "OAIC AI Privacy Guidance"@en ;
+    dcterms:source :OAICCommercialAIDocument ;
+    :hasStatement :OAICAIDueDiligenceStatement,
+        :OAICHumanOversightStatement,
+        :OAICPrivacyDisclosureStatement ;
+    :jurisdiction "Australia" .
+
+:Westpac :hasGovernanceDisclosure :Westpac2025AnnualReport ;
+    :hasStatement :WestpacAccountabilityStatement,
+        :WestpacContestabilityStatement,
+        :WestpacFairnessStatement,
+        :WestpacHumanOversightStatement,
+        :WestpacPrivacyStatement,
+        :WestpacReliabilityStatement,
+        :WestpacStandard2025Statement,
+        :WestpacTransparencyStatement .
+
+# Expansion governance statements and concepts
+
+:ANZGuardrailsChallengeStatement a owl:NamedIndividual,
+        :GovernanceStatement ;
+    rdfs:label "ANZ proposes using existing complaints mechanisms for the proposed guardrail; this does not establish a current customer entitlement." ;
+    :hasEvidence :ANZGuardrailsChallengeEvidence ;
+    :statementStatus "Consultation submission; proposal, not implemented procedure" ;
+    :statementText "ANZ proposes using existing complaints mechanisms for the proposed guardrail; this does not establish a current customer entitlement." ;
+    :statementTopic "Contestability" .
+
+:ANZGuardrailsEUReferenceStatement a owl:NamedIndividual,
+        :GovernanceStatement ;
+    rdfs:label "ANZ references the EU AI Act when discussing high-risk classification in a submission, not a published AI policy." ;
+    :hasEvidence :ANZGuardrailsEUReferenceEvidence ;
+    :statementStatus "Consultation submission; external framework reference" ;
+    :statementText "ANZ references the EU AI Act when discussing high-risk classification in a submission, not a published AI policy." ;
+    :statementTopic "Framework references" .
+
+:ANZGuardrailsFairnessStatement a owl:NamedIndividual,
+        :GovernanceStatement ;
+    rdfs:label "ANZ states fairness and information security priorities in a consultation submission." ;
+    :hasEvidence :ANZGuardrailsFairnessEvidence ;
+    :statementStatus "Consultation submission; firm position, not a policy" ;
+    :statementText "ANZ states fairness and information security priorities in a consultation submission." ;
+    :statementTopic "Fairness" .
+
+:ANZGuardrailsJurisdictionStatement a owl:NamedIndividual,
+        :GovernanceStatement ;
+    rdfs:label "ANZ questions the proposed Australian guardrails’ territorial scope in its October 2024 submission; this is not a statement of current law." ;
+    :hasEvidence :ANZGuardrailsJurisdictionEvidence ;
+    :statementStatus "Consultation submission; historical proposal commentary" ;
+    :statementText "ANZ questions the proposed Australian guardrails’ territorial scope in its October 2024 submission; this is not a statement of current law." ;
+    :statementTopic "Jurisdiction" .
+
+:ANZHomeLoanEthicsStatement a owl:NamedIndividual,
+        :GovernanceStatement ;
+    rdfs:label "ANZ describes data ethics principles guiding AI use in home-loan automation." ;
+    :hasEvidence :ANZHomeLoanEthicsEvidence ;
+    :statementStatus "Corporate article; self-report, not policy text" ;
+    :statementText "ANZ describes data ethics principles guiding AI use in home-loan automation." ;
+    :statementTopic "Accountability" .
+
+:ANZModelPolicy2025Statement a owl:NamedIndividual,
+        :GovernanceStatement ;
+    rdfs:label "ANZ describes model monitoring, re-validation and approval for credit-loss models; this passage does not establish an AI-specific process." ;
+    :hasEvidence :ANZModelPolicy2025Evidence ;
+    :statementStatus "Annual-report self-report; general model governance, indirect AI relevance" ;
+    :statementText "ANZ describes model monitoring, re-validation and approval for credit-loss models; this passage does not establish an AI-specific process." ;
+    :statementTopic "Approval" .
+
+:ASIC798DocumentationStatement a owl:NamedIndividual,
+        :GovernanceStatement ;
+    rdfs:label "ASIC reproduces a documentation concern in an anonymised case study; it cannot be attributed to a named bank." ;
+    :hasEvidence :ASIC798DocumentationEvidence ;
+    :statementStatus "Regulator review finding; anonymised sample" ;
+    :statementText "ASIC reproduces a documentation concern in an anonymised case study; it cannot be attributed to a named bank." ;
+    :statementTopic "Documentation" .
+
+:ASIC798GovernanceGapStatement a owl:NamedIndividual,
+        :GovernanceStatement ;
+    rdfs:label "ASIC’s review identifies a potential gap between AI adoption and governance; reviewed licensees are not identified as particular sample banks." ;
+    :hasEvidence :ASIC798GovernanceGapEvidence ;
+    :statementStatus "Regulator review finding; anonymised sample" ;
+    :statementText "ASIC’s review identifies a potential gap between AI adoption and governance; reviewed licensees are not identified as particular sample banks." ;
+    :statementTopic "Accountability" .
+
+:ASIC798ThirdPartiesStatement a owl:NamedIndividual,
+        :GovernanceStatement ;
+    rdfs:label "ASIC reports third-party governance weaknesses in its review sample, without identifying the seven banks in this graph." ;
+    :hasEvidence :ASIC798ThirdPartiesEvidence ;
+    :statementStatus "Regulator review finding; anonymised sample" ;
+    :statementText "ASIC reports third-party governance weaknesses in its review sample, without identifying the seven banks in this graph." ;
+    :statementTopic "Third-party governance" .
+
+:ASICComplaintReasonsStatement a owl:NamedIndividual,
+        :GovernanceStatement ;
+    rdfs:label "RG 271.54 concerns reasons in complaint responses; it is general financial complaint guidance, not an AI-specific right to explanation." ;
+    :hasEvidence :ASICComplaintReasonsEvidence ;
+    :statementStatus "Regulatory guide; paragraph marked enforceable in archived edition" ;
+    :statementText "RG 271.54 concerns reasons in complaint responses; it is general financial complaint guidance, not an AI-specific right to explanation." ;
+    :statementTopic "Contestability" .
+
+:ASICComplaintTimeframeStatement a owl:NamedIndividual,
+        :GovernanceStatement ;
+    rdfs:label "RG 271.56 gives a general 30-day timeframe with different timeframes and exceptions; check the full guide and current requirements." ;
+    :hasEvidence :ASICComplaintTimeframeEvidence ;
+    :statementStatus "Regulatory guide; general rule with exceptions" ;
+    :statementText "RG 271.56 gives a general 30-day timeframe with different timeframes and exceptions; check the full guide and current requirements." ;
+    :statementTopic "Contestability" .
+
+:AUAccountabilityStatement a owl:NamedIndividual,
+        :GovernanceStatement ;
+    rdfs:label "Australian AI adoption guidance organises responsibilities for AI governance." ;
+    :hasEvidence :AUAccountabilityEvidence ;
+    :statementStatus "Voluntary guidance; archived 2026 web edition, body dated October 2025" ;
+    :statementText "Australian AI adoption guidance organises responsibilities for AI governance." ;
+    :statementTopic "Accountability" .
+
+:AUSupplierAccountabilityStatement a owl:NamedIndividual,
+        :GovernanceStatement ;
+    rdfs:label "Australian guidance recommends clarifying supply-chain responsibilities across the lifecycle." ;
+    :hasEvidence :AUSupplierAccountabilityEvidence ;
+    :statementStatus "Voluntary guidance; not a certification" ;
+    :statementText "Australian guidance recommends clarifying supply-chain responsibilities across the lifecycle." ;
+    :statementTopic "Third-party governance" .
+
+:CBAAccountabilityStatement a owl:NamedIndividual,
+        :GovernanceStatement ;
+    rdfs:label "CBA states that AI accountability should be identified and documented throughout the lifecycle." ;
+    :hasEvidence :CBAAccountabilityEvidence ;
+    :statementStatus "Published firm commitment; implementation not independently verified" ;
+    :statementText "CBA states that AI accountability should be identified and documented throughout the lifecycle." ;
+    :statementTopic "Accountability" .
+
+:CBAAICommittee2025Statement a owl:NamedIndividual,
+        :GovernanceStatement ;
+    rdfs:label "CBA names an AI Risk Committee among strategic-risk management committees in 2025; remit detail is not stated in this passage." ;
+    :hasEvidence :CBAAICommittee2025Evidence ;
+    :statementStatus "Annual-report committee listing; remit detail limited" ;
+    :statementText "CBA names an AI Risk Committee among strategic-risk management committees in 2025; remit detail is not stated in this passage." ;
+    :statementTopic "Accountability" .
+
+:CBAAIRiskCommittee2025 a owl:NamedIndividual,
+        :AIGovernanceBody ;
+    rdfs:label "CBA AI Risk Committee (2025 report listing)"@en ;
+    rdfs:comment "Named among key strategic-risk management committees; detailed remit is not provided in this passage." ;
+    :hasEvidence :CBAAICommittee2025Evidence .
+
+:CBAAISystemDefinition a owl:NamedIndividual,
+        :DefinitionStatement ;
+    rdfs:label "CBA public definition of AI system"@en ;
+    :definesConcept :AISystem ;
+    :definitionText "An AI system is a machine-based system(s) that, for explicit or implicit objectives, infers, from the input it receives, how to generate outputs such as predictions, content, recommendations, or decisions that can influence physical or virtual environments. Different AI systems vary in their levels of autonomy and adaptiveness after deployment." ;
+    :hasEvidence :CBAAISystemDefinitionEvidence ;
+    :statedBy :CommonwealthBank .
+
+:CBAAISystemDefinitionStatement a owl:NamedIndividual,
+        :GovernanceStatement ;
+    rdfs:label "CBA publishes an AI-system definition; wording similarity does not establish an explicit framework citation." ;
+    :hasEvidence :CBAAISystemDefinitionEvidence ;
+    :statementStatus "Published definition; not a framework adoption claim" ;
+    :statementText "CBA publishes an AI-system definition; wording similarity does not establish an explicit framework citation." ;
+    :statementTopic "Definitions" .
+
+:CBAFairnessStatement a owl:NamedIndividual,
+        :GovernanceStatement ;
+    rdfs:label "CBA states that AI outputs should not unfairly discriminate." ;
+    :hasEvidence :CBAFairnessEvidence ;
+    :statementStatus "Published firm commitment; implementation not independently verified" ;
+    :statementText "CBA states that AI outputs should not unfairly discriminate." ;
+    :statementTopic "Fairness" .
+
+:CBAHumanOversightStatement a owl:NamedIndividual,
+        :GovernanceStatement ;
+    rdfs:label "CBA states that human oversight is necessary." ;
+    :hasEvidence :CBAHumanOversightEvidence ;
+    :statementStatus "Published firm commitment; implementation not independently verified" ;
+    :statementText "CBA states that human oversight is necessary." ;
+    :statementTopic "Human oversight" .
+
+:CBAPrivacyStatement a owl:NamedIndividual,
+        :GovernanceStatement ;
+    rdfs:label "CBA states a privacy and data protection principle." ;
+    :hasEvidence :CBAPrivacyEvidence ;
+    :statementStatus "Published firm commitment; implementation not independently verified" ;
+    :statementText "CBA states a privacy and data protection principle." ;
+    :statementTopic "Privacy" .
+
+:CBAReliabilityStatement a owl:NamedIndividual,
+        :GovernanceStatement ;
+    rdfs:label "CBA states a reliability principle; this is not a test result." ;
+    :hasEvidence :CBAReliabilityEvidence ;
+    :statementStatus "Published firm commitment; implementation not independently verified" ;
+    :statementText "CBA states a reliability principle; this is not a test result." ;
+    :statementTopic "Testing and monitoring" .
+
+:CBARiskDefinition2025Statement a owl:NamedIndividual,
+        :GovernanceStatement ;
+    rdfs:label "CBA defines Artificial Intelligence Risk within strategic risk in 2025." ;
+    :hasEvidence :CBARiskDefinition2025Evidence ;
+    :statementStatus "Annual-report definition" ;
+    :statementText "CBA defines Artificial Intelligence Risk within strategic risk in 2025." ;
+    :statementTopic "Risk terminology" .
+
+:CBAToolkit2025Statement a owl:NamedIndividual,
+        :GovernanceStatement ;
+    rdfs:label "CBA describes toolkits supporting performance assessment and bias testing." ;
+    :hasEvidence :CBAToolkit2025Evidence ;
+    :statementStatus "Annual-report self-report" ;
+    :statementText "CBA describes toolkits supporting performance assessment and bias testing." ;
+    :statementTopic "Testing and monitoring" .
+
+:CBATransparencyStatement a owl:NamedIndividual,
+        :GovernanceStatement ;
+    rdfs:label "CBA states an understandability principle." ;
+    :hasEvidence :CBATransparencyEvidence ;
+    :statementStatus "Published firm commitment; implementation not independently verified" ;
+    :statementText "CBA states an understandability principle." ;
+    :statementTopic "Transparency" .
+
+:EUCreditworthinessStatement a owl:NamedIndividual,
+        :GovernanceStatement ;
+    rdfs:label "Annex III includes creditworthiness and credit scoring of natural persons, with a financial-fraud detection exception. Read with Article 6; this does not classify every bank account opening as high-risk." ;
+    :hasEvidence :EUCreditworthinessEvidence ;
+    :statementStatus "Enacted regulation in archived 2024 text; scope and temporal applicability not determined" ;
+    :statementText "Annex III includes creditworthiness and credit scoring of natural persons, with a financial-fraud detection exception. Read with Article 6; this does not classify every bank account opening as high-risk." ;
+    :statementTopic "Risk terminology" .
+
+:EUDocumentationStatement a owl:NamedIndividual,
+        :GovernanceStatement ;
+    rdfs:label "Article 11(1) specifies technical documentation for high-risk AI systems; applicability and dates require separate assessment." ;
+    :hasEvidence :EUDocumentationEvidence ;
+    :statementStatus "Enacted regulation in archived 2024 text; scope and temporal applicability not determined" ;
+    :statementText "Article 11(1) specifies technical documentation for high-risk AI systems; applicability and dates require separate assessment." ;
+    :statementTopic "Documentation" .
+
+:EUExplanationStatement a owl:NamedIndividual,
+        :GovernanceStatement ;
+    rdfs:label "Article 86 describes explanations for specified significantly adverse decisions using certain Annex III high-risk systems, subject to its conditions and exceptions. It is not a universal right for Australian bank accounts." ;
+    :hasEvidence :EUExplanationEvidence ;
+    :statementStatus "Enacted regulation in archived 2024 text; scope and temporal applicability not determined" ;
+    :statementText "Article 86 describes explanations for specified significantly adverse decisions using certain Annex III high-risk systems, subject to its conditions and exceptions. It is not a universal right for Australian bank accounts." ;
+    :statementTopic "Contestability" .
+
+:EUTerritorialScopeStatement a owl:NamedIndividual,
+        :GovernanceStatement ;
+    rdfs:label "Article 2(1)(c) addresses certain third-country providers and deployers where AI output is used in the Union; headquarters alone does not decide applicability." ;
+    :hasEvidence :EUTerritorialScopeEvidence ;
+    :statementStatus "Enacted regulation in archived 2024 text; scope and temporal applicability not determined" ;
+    :statementText "Article 2(1)(c) addresses certain third-country providers and deployers where AI output is used in the Union; headquarters alone does not decide applicability." ;
+    :statementTopic "Jurisdiction" .
+
+:FSBConcentration2024Statement a owl:NamedIndividual,
+        :GovernanceStatement ;
+    rdfs:label "FSB identifies third-party dependency and provider concentration as AI-related financial stability vulnerabilities." ;
+    :hasEvidence :FSBConcentration2024Evidence ;
+    :statementStatus "International analytical report; not binding" ;
+    :statementText "FSB identifies third-party dependency and provider concentration as AI-related financial stability vulnerabilities." ;
+    :statementTopic "Third-party governance" .
+
+:FSBModelRisk2024Statement a owl:NamedIndividual,
+        :GovernanceStatement ;
+    rdfs:label "FSB groups model risk, data quality and governance among AI-related vulnerabilities." ;
+    :hasEvidence :FSBModelRisk2024Evidence ;
+    :statementStatus "International analytical report; not binding" ;
+    :statementText "FSB groups model risk, data quality and governance among AI-related vulnerabilities." ;
+    :statementTopic "Risk terminology" .
+
+:FSBMonitoring2025Statement a owl:NamedIndividual,
+        :GovernanceStatement ;
+    rdfs:label "FSB’s 2025 report addresses supervisory monitoring and vulnerabilities, extending the 2024 analysis." ;
+    :hasEvidence :FSBMonitoring2025Evidence ;
+    :statementStatus "International analytical report; not binding" ;
+    :statementText "FSB’s 2025 report addresses supervisory monitoring and vulnerabilities, extending the 2024 analysis." ;
+    :statementTopic "Documentation" .
+
+:GoldmanOversight2025Statement a owl:NamedIndividual,
+        :GovernanceStatement ;
+    rdfs:label "Goldman Sachs identifies an AI risk committee and its reporting relationship in 2025." ;
+    :hasEvidence :GoldmanOversight2025Evidence ;
+    :statementStatus "Annual-report self-report" ;
+    :statementText "Goldman Sachs identifies an AI risk committee and its reporting relationship in 2025." ;
+    :statementTopic "Accountability" .
+
+:HSBCAccountabilityStatement a owl:NamedIndividual,
+        :GovernanceStatement ;
+    rdfs:label "HSBC states AI accountability." ;
+    :hasEvidence :HSBCAccountabilityEvidence ;
+    :statementStatus "Published firm commitment; implementation not independently verified" ;
+    :statementText "HSBC states AI accountability." ;
+    :statementTopic "Accountability" .
+
+:HSBCBiasStatement a owl:NamedIndividual,
+        :GovernanceStatement ;
+    rdfs:label "HSBC states a commitment to detecting and reducing unfair bias." ;
+    :hasEvidence :HSBCBiasEvidence ;
+    :statementStatus "Published firm commitment; implementation not independently verified" ;
+    :statementText "HSBC states a commitment to detecting and reducing unfair bias." ;
+    :statementTopic "Fairness" .
+
+:HSBCChallengeStatement a owl:NamedIndividual,
+        :GovernanceStatement ;
+    rdfs:label "HSBC states forums for challenge; this is not a published customer complaint route." ;
+    :hasEvidence :HSBCChallengeEvidence ;
+    :statementStatus "Published firm commitment; implementation not independently verified" ;
+    :statementText "HSBC states forums for challenge; this is not a published customer complaint route." ;
+    :statementTopic "Contestability" .
+
+:HSBCDataMinimisationStatement a owl:NamedIndividual,
+        :GovernanceStatement ;
+    rdfs:label "HSBC states purpose-appropriate use of personal data." ;
+    :hasEvidence :HSBCDataMinimisationEvidence ;
+    :statementStatus "Published firm commitment; implementation not independently verified" ;
+    :statementText "HSBC states purpose-appropriate use of personal data." ;
+    :statementTopic "Privacy" .
+
+:HSBCEscalationStatement a owl:NamedIndividual,
+        :GovernanceStatement ;
+    rdfs:label "HSBC states executive escalation of concerns." ;
+    :hasEvidence :HSBCEscalationEvidence ;
+    :statementStatus "Published firm commitment; implementation not independently verified" ;
+    :statementText "HSBC states executive escalation of concerns." ;
+    :statementTopic "Human oversight" .
+
+:HSBCMonitoringStatement a owl:NamedIndividual,
+        :GovernanceStatement ;
+    rdfs:label "HSBC states that it reviews AI inputs and outputs for unintended consequences." ;
+    :hasEvidence :HSBCMonitoringEvidence ;
+    :statementStatus "Published firm commitment; implementation not independently verified" ;
+    :statementText "HSBC states that it reviews AI inputs and outputs for unintended consequences." ;
+    :statementTopic "Testing and monitoring" .
+
+:HSBCPrivacy2025Statement a owl:NamedIndividual,
+        :GovernanceStatement ;
+    rdfs:label "HSBC’s 2025 report links its ethical AI principles to privacy." ;
+    :hasEvidence :HSBCPrivacy2025Evidence ;
+    :statementStatus "Annual-report self-report" ;
+    :statementText "HSBC’s 2025 report links its ethical AI principles to privacy." ;
+    :statementTopic "Privacy" .
+
+:HSBCPrivacyStatement a owl:NamedIndividual,
+        :GovernanceStatement ;
+    rdfs:label "HSBC states that privacy is considered in design and approval." ;
+    :hasEvidence :HSBCPrivacyEvidence ;
+    :statementStatus "Published firm commitment; implementation not independently verified" ;
+    :statementText "HSBC states that privacy is considered in design and approval." ;
+    :statementTopic "Privacy" .
+
+:HSBCSupplierPrivacyStatement a owl:NamedIndividual,
+        :GovernanceStatement ;
+    rdfs:label "HSBC states conditional third-party privacy and security vetting." ;
+    :hasEvidence :HSBCSupplierPrivacyEvidence ;
+    :statementStatus "Published firm commitment; implementation not independently verified" ;
+    :statementText "HSBC states conditional third-party privacy and security vetting." ;
+    :statementTopic "Third-party governance" .
+
+:HSBCTestingStatement a owl:NamedIndividual,
+        :GovernanceStatement ;
+    rdfs:label "HSBC states pre-deployment and ongoing testing and monitoring." ;
+    :hasEvidence :HSBCTestingEvidence ;
+    :statementStatus "Published firm commitment; implementation not independently verified" ;
+    :statementText "HSBC states pre-deployment and ongoing testing and monitoring." ;
+    :statementTopic "Testing and monitoring" .
+
+:HSBCTrainingStatement a owl:NamedIndividual,
+        :GovernanceStatement ;
+    rdfs:label "HSBC states training about AI capabilities and limitations." ;
+    :hasEvidence :HSBCTrainingEvidence ;
+    :statementStatus "Published firm commitment; implementation not independently verified" ;
+    :statementText "HSBC states training about AI capabilities and limitations." ;
+    :statementTopic "Accountability" .
+
+:JPMorganApproval2025Statement a owl:NamedIndividual,
+        :GovernanceStatement ;
+    rdfs:label "JPMorgan reports pre-use review with explicit exceptions; the surrounding section includes AI models." ;
+    :hasEvidence :JPMorganApproval2025Evidence ;
+    :statementStatus "Annual-report self-report; exceptions explicitly retained" ;
+    :statementText "JPMorgan reports pre-use review with explicit exceptions; the surrounding section includes AI models." ;
+    :statementTopic "Approval" .
+
+:JPMorganModelReviewApproval2025 a owl:NamedIndividual,
+        :AIDeploymentApproval ;
+    rdfs:label "JPMorgan model review before use (2025; exceptions allowed)"@en ;
+    rdfs:comment "Model risk section includes AI techniques. Exceptions to pre-use review are expressly allowed." ;
+    :hasEvidence :JPMorganApproval2025Evidence .
+
+:JPMorganTiering2025Statement a owl:NamedIndividual,
+        :GovernanceStatement ;
+    rdfs:label "JPMorgan describes model tiering; these are not asserted to equal EU high-risk AI categories." ;
+    :hasEvidence :JPMorganTiering2025Evidence ;
+    :statementStatus "Annual-report self-report; model tiering includes AI context" ;
+    :statementText "JPMorgan describes model tiering; these are not asserted to equal EU high-risk AI categories." ;
+    :statementTopic "Risk tiering" .
+
+:MASConsultationStatusStatement a owl:NamedIndividual,
+        :GovernanceStatement ;
+    rdfs:label "MAS described the guidelines as proposed and consultation responses as under review on 20 March 2026. This release does not establish their status after that date." ;
+    :hasEvidence :MASConsultationStatusEvidence ;
+    :statementStatus "Official release; proposal status as at 20 March 2026" ;
+    :statementText "MAS described the guidelines as proposed and consultation responses as under review on 20 March 2026. This release does not establish their status after that date." ;
+    :statementTopic "Jurisdiction" .
+
+:NABAssessment2025Statement a owl:NamedIndividual,
+        :GovernanceStatement ;
+    rdfs:label "NAB reports review of personal information and ethics assessment of AI use cases." ;
+    :hasEvidence :NABAssessment2025Evidence ;
+    :statementStatus "Annual-report self-report" ;
+    :statementText "NAB reports review of personal information and ethics assessment of AI use cases." ;
+    :statementTopic "Fairness" .
+
+:NABFramework2025Statement a owl:NamedIndividual,
+        :GovernanceStatement ;
+    rdfs:label "NAB reports an AI Framework aligned with Australian ethics principles in 2025; full framework text is not collected." ;
+    :hasEvidence :NABFramework2025Evidence ;
+    :statementStatus "Annual-report self-report; not published policy text" ;
+    :statementText "NAB reports an AI Framework aligned with Australian ethics principles in 2025; full framework text is not collected." ;
+    :statementTopic "Framework references" .
+
+:NABFrameworkReference2024Statement a owl:NamedIndividual,
+        :GovernanceStatement ;
+    rdfs:label "NAB explicitly names alignment with the Australian principles in its annual report; this is not a published policy reference." ;
+    :hasEvidence :NABFrameworkReference2024Evidence ;
+    :statementStatus "Annual-report self-report; framework reference, not policy text" ;
+    :statementText "NAB explicitly names alignment with the Australian principles in its annual report; this is not a published policy reference." ;
+    :statementTopic "Framework references" .
+
+:NABHumanRights2024Statement a owl:NamedIndividual,
+        :GovernanceStatement ;
+    rdfs:label "NAB reports integrating the Australian Human Rights Commission human-rights impact assessment tool into its AI data ethics processes." ;
+    :hasEvidence :NABHumanRights2024Evidence ;
+    :statementStatus "Annual-report self-report" ;
+    :statementText "NAB reports integrating the Australian Human Rights Commission human-rights impact assessment tool into its AI data ethics processes." ;
+    :statementTopic "Fairness" .
+
+:NISTGenAIInventoryStatement a owl:NamedIndividual,
+        :GovernanceStatement ;
+    rdfs:label "NIST suggests inventorying generative AI systems under action GV-1.6-001." ;
+    :hasEvidence :NISTGenAIInventoryEvidence ;
+    :statementStatus "Voluntary suggested action" ;
+    :statementText "NIST suggests inventorying generative AI systems under action GV-1.6-001." ;
+    :statementTopic "Documentation" .
+
+:NISTGenAISupplierStatement a owl:NamedIndividual,
+        :GovernanceStatement ;
+    rdfs:label "NIST describes the component supply chain underlying generative AI governance risks." ;
+    :hasEvidence :NISTGenAISupplierEvidence ;
+    :statementStatus "Voluntary risk-management profile" ;
+    :statementText "NIST describes the component supply chain underlying generative AI governance risks." ;
+    :statementTopic "Third-party governance" .
+
+:OAICAIDueDiligenceStatement a owl:NamedIndividual,
+        :GovernanceStatement ;
+    rdfs:label "OAIC advises due diligence when selecting commercial AI products." ;
+    :hasEvidence :OAICAIDueDiligenceEvidence ;
+    :statementStatus "Regulator guidance; no bank-specific compliance finding" ;
+    :statementText "OAIC advises due diligence when selecting commercial AI products." ;
+    :statementTopic "Third-party governance" .
+
+:OAICHumanOversightStatement a owl:NamedIndividual,
+        :GovernanceStatement ;
+    rdfs:label "OAIC includes human oversight among commercial AI due-diligence considerations." ;
+    :hasEvidence :OAICHumanOversightEvidence ;
+    :statementStatus "Regulator guidance; interpret with surrounding paragraph" ;
+    :statementText "OAIC includes human oversight among commercial AI due-diligence considerations." ;
+    :statementTopic "Human oversight" .
+
+:OAICPrivacyDisclosureStatement a owl:NamedIndividual,
+        :GovernanceStatement ;
+    rdfs:label "OAIC advises transparent privacy policies and notices about AI use; applicability depends on the Privacy Act and the entity." ;
+    :hasEvidence :OAICPrivacyDisclosureEvidence ;
+    :statementStatus "Regulator guidance interpreting privacy obligations" ;
+    :statementText "OAIC advises transparent privacy policies and notices about AI use; applicability depends on the Privacy Act and the entity." ;
+    :statementTopic "Privacy" .
+
+:WestpacAccountabilityStatement a owl:NamedIndividual,
+        :GovernanceStatement ;
+    rdfs:label "Westpac states lifecycle accountability." ;
+    :hasEvidence :WestpacAccountabilityEvidence ;
+    :statementStatus "Published firm commitment; implementation not independently verified" ;
+    :statementText "Westpac states lifecycle accountability." ;
+    :statementTopic "Accountability" .
+
+:WestpacContestabilityStatement a owl:NamedIndividual,
+        :GovernanceStatement ;
+    rdfs:label "Westpac commits to mechanisms for challenging significant AI impacts; the passage does not specify an account-level procedure." ;
+    :hasEvidence :WestpacContestabilityEvidence ;
+    :statementStatus "Published firm commitment; implementation not independently verified" ;
+    :statementText "Westpac commits to mechanisms for challenging significant AI impacts; the passage does not specify an account-level procedure." ;
+    :statementTopic "Contestability" .
+
+:WestpacFairnessStatement a owl:NamedIndividual,
+        :GovernanceStatement ;
+    rdfs:label "Westpac states a fairness and accessibility principle." ;
+    :hasEvidence :WestpacFairnessEvidence ;
+    :statementStatus "Published firm commitment; implementation not independently verified" ;
+    :statementText "Westpac states a fairness and accessibility principle." ;
+    :statementTopic "Fairness" .
+
+:WestpacHumanOversightStatement a owl:NamedIndividual,
+        :GovernanceStatement ;
+    rdfs:label "Westpac states a human oversight principle." ;
+    :hasEvidence :WestpacHumanOversightEvidence ;
+    :statementStatus "Published firm commitment; implementation not independently verified" ;
+    :statementText "Westpac states a human oversight principle." ;
+    :statementTopic "Human oversight" .
+
+:WestpacPrivacyStatement a owl:NamedIndividual,
+        :GovernanceStatement ;
+    rdfs:label "Westpac states a privacy, data protection and security principle." ;
+    :hasEvidence :WestpacPrivacyEvidence ;
+    :statementStatus "Published firm commitment; implementation not independently verified" ;
+    :statementText "Westpac states a privacy, data protection and security principle." ;
+    :statementTopic "Privacy" .
+
+:WestpacReliabilityStatement a owl:NamedIndividual,
+        :GovernanceStatement ;
+    rdfs:label "Westpac states a reliability and safety principle." ;
+    :hasEvidence :WestpacReliabilityEvidence ;
+    :statementStatus "Published firm commitment; implementation not independently verified" ;
+    :statementText "Westpac states a reliability and safety principle." ;
+    :statementTopic "Testing and monitoring" .
+
+:WestpacStandard2025Statement a owl:NamedIndividual,
+        :GovernanceStatement ;
+    rdfs:label "Westpac names AIRMS and a Responsible AI Playbook in its 2025 report; the internal documents are not collected." ;
+    :hasEvidence :WestpacStandard2025Evidence ;
+    :statementStatus "Annual-report self-report; internal documents named" ;
+    :statementText "Westpac names AIRMS and a Responsible AI Playbook in its 2025 report; the internal documents are not collected." ;
+    :statementTopic "Documentation" .
+
+:WestpacTransparencyStatement a owl:NamedIndividual,
+        :GovernanceStatement ;
+    rdfs:label "Westpac states when people should be informed about AI interaction and significant impacts." ;
+    :hasEvidence :WestpacTransparencyEvidence ;
+    :statementStatus "Published firm commitment; implementation not independently verified" ;
+    :statementText "Westpac states when people should be informed about AI interaction and significant impacts." ;
+    :statementTopic "Transparency" .
+
+# Expansion source documents
+
+:ANZ2025AnnualReport a owl:NamedIndividual,
+        :FirmAIGovernanceDisclosure ;
+    rdfs:label "ANZ — 2025 Annual Report" ;
+    :documentDate "2025" ;
+    :documentType "Annual report" ;
+    :documentURL "https://www.anz.com/content/dam/anzcom/shareholder/2025-annual-report/anz-2025-annual-report.pdf"^^xsd:anyURI ;
+    :hasStatement :ANZModelPolicy2025Statement ;
+    :localPath "corpus/firm-disclosures/anz/ANZ_2025_Annual_Report.pdf" ;
+    :retrievalDate "2026-09-22"^^xsd:date ;
+    :sha256 "1842add20987de8fd33d29d6da3348ece77ccf6c86b32ea75fed6d13e0e9d442" .
+
+:ANZGuardrailsSubmission2024 a owl:NamedIndividual,
+        :FirmAIGovernanceDisclosure ;
+    rdfs:label "ANZ — Submission on mandatory guardrails for AI in high-risk settings" ;
+    :documentDate "2024" ;
+    :documentType "Public source; see statement status" ;
+    :documentURL "https://www.anz.com.au/content/dam/anzcomau/proposal-paper-for-introducing-mandatory-guardrails-for-ai-in-high-risk-settings-to-the-department-of-industry-science-and-resources-october-2024.pdf"^^xsd:anyURI ;
+    :hasStatement :ANZGuardrailsChallengeStatement,
+        :ANZGuardrailsEUReferenceStatement,
+        :ANZGuardrailsFairnessStatement,
+        :ANZGuardrailsJurisdictionStatement ;
+    :localPath "corpus/firm-disclosures/anz/ANZ_AI_Guardrails_Submission_2024.pdf" ;
+    :retrievalDate "2026-09-22"^^xsd:date ;
+    :sha256 "84f33d1f1bcf0955466fdc271323a92f84cc62d8b17fbc3792305dcef2a05b61" .
+
+:ANZHomeLoanAutomation2024 a owl:NamedIndividual,
+        :FirmAIGovernanceDisclosure ;
+    rdfs:label "ANZ — The dawn of home loan automation" ;
+    :documentDate "2024" ;
+    :documentType "Public source; see statement status" ;
+    :documentURL "https://www.anz.com.au/bluenotes/2024/october/home-loans-automation-technology-mcmahon/"^^xsd:anyURI ;
+    :hasStatement :ANZHomeLoanEthicsStatement ;
+    :localPath "corpus/firm-disclosures/anz/ANZ_Home_Loan_Automation_2024.html" ;
+    :retrievalDate "2026-09-22"^^xsd:date ;
+    :sha256 "fc6935a3af3a458a088d92d89d8fa00373a990b4e94874aeaf131a7238dbc795" .
+
+:ASICREP798Document a owl:NamedIndividual,
+        :SourceDocument ;
+    rdfs:label "ASIC REP 798 — Beware the gap: Governance arrangements in the face of AI innovation" ;
+    :documentDate "2024" ;
+    :documentType "Public source; see statement status" ;
+    :documentURL "https://download.asic.gov.au/media/mtllqjo0/rep-798-published-29-october-2024.pdf"^^xsd:anyURI ;
+    :hasStatement :ASIC798DocumentationStatement,
+        :ASIC798GovernanceGapStatement,
+        :ASIC798ThirdPartiesStatement ;
+    :localPath "corpus/regulatory/asic/ASIC_REP798_2024.pdf" ;
+    :retrievalDate "2026-09-22"^^xsd:date ;
+    :sha256 "6b70b389541eb1b1999116b2ad88a87abf169552b38e5f44bf6e3cb00ac448fa" .
+
+:ASICRG271Document a owl:NamedIndividual,
+        :SourceDocument ;
+    rdfs:label "ASIC RG 271 — Internal dispute resolution" ;
+    :documentDate "2021" ;
+    :documentType "Public source; see statement status" ;
+    :documentURL "https://download.asic.gov.au/media/3olo5aq5/rg271-published-2-september-2021.pdf"^^xsd:anyURI ;
+    :hasStatement :ASICComplaintReasonsStatement,
+        :ASICComplaintTimeframeStatement ;
+    :localPath "corpus/regulatory/asic/ASIC_RG271_2021.pdf" ;
+    :retrievalDate "2026-09-22"^^xsd:date ;
+    :sha256 "a3ab42a235957b53f67e37558558b67b93b46d57fb05146dac021b7c3d658b58" .
+
+:AUGuidance2026Document a owl:NamedIndividual,
+        :SourceDocument ;
+    rdfs:label "Australian AI Adoption Guidance — Guidance for AI Adoption: Implementation practices" ;
+    :documentDate "October 2025; archived from 2026 web edition" ;
+    :documentType "Public source; see statement status" ;
+    :documentURL "https://www.ai.gov.au/sites/default/files/2026-07/Guidance-for-AI-adoption-implementation-guidance_0_0_0.pdf"^^xsd:anyURI ;
+    :hasStatement :AUAccountabilityStatement,
+        :AUSupplierAccountabilityStatement ;
+    :localPath "corpus/regulatory/au-ai-adoption/AU_AI_Adoption_Implementation_2026.pdf" ;
+    :retrievalDate "2026-09-22"^^xsd:date ;
+    :sha256 "54d7d8f5c416add39981cc57f29a4dc98ad20c0840cde7673a6cc0f4190d39bc" .
+
+:CBA2025AnnualReport a owl:NamedIndividual,
+        :FirmAIGovernanceDisclosure ;
+    rdfs:label "Commonwealth Bank — 2025 Annual Report" ;
+    :documentDate "2025" ;
+    :documentType "Annual report" ;
+    :documentURL "https://www.commbank.com.au/content/dam/commbank-assets/investors/docs/results/fy25/2025-annual-report.pdf"^^xsd:anyURI ;
+    :hasStatement :CBAAICommittee2025Statement,
+        :CBARiskDefinition2025Statement,
+        :CBAToolkit2025Statement ;
+    :localPath "corpus/firm-disclosures/cba/CBA_2025_Annual_Report.pdf" ;
+    :retrievalDate "2026-09-22"^^xsd:date ;
+    :sha256 "6463ba4d4b8075be881e1e75d5ae1f86957080411198f94736384950b671c2bf" .
+
+:CBAArtificialIntelligenceApproachPage :hasStatement :CBAAISystemDefinitionStatement,
+        :CBAAccountabilityStatement,
+        :CBAFairnessStatement,
+        :CBAHumanOversightStatement,
+        :CBAPrivacyStatement,
+        :CBAReliabilityStatement,
+        :CBATransparencyStatement .
+
+:EUAIActDocument :hasStatement :EUCreditworthinessStatement,
+        :EUDocumentationStatement,
+        :EUExplanationStatement,
+        :EUTerritorialScopeStatement .
+
+:FSBAI2024Document a owl:NamedIndividual,
+        :SourceDocument ;
+    rdfs:label "FSB AI 2024 — The Financial Stability Implications of Artificial Intelligence" ;
+    :documentDate "2024" ;
+    :documentType "Public source; see statement status" ;
+    :documentURL "https://www.fsb.org/uploads/P14112024.pdf"^^xsd:anyURI ;
+    :hasStatement :FSBConcentration2024Statement,
+        :FSBModelRisk2024Statement ;
+    :localPath "corpus/regulatory/fsb/FSB_AI_Financial_Stability_2024.pdf" ;
+    :retrievalDate "2026-09-22"^^xsd:date ;
+    :sha256 "4b81544ecb28b50fb2fa5dab530a0f32c9351506a875d1de841b946d18e7ecef" .
+
+:FSBAI2025Document a owl:NamedIndividual,
+        :SourceDocument ;
+    rdfs:label "FSB AI 2025 — Monitoring Adoption of Artificial Intelligence and Related Vulnerabilities in the Financial Sector" ;
+    :documentDate "2025" ;
+    :documentType "Public source; see statement status" ;
+    :documentURL "https://www.fsb.org/uploads/P101025.pdf"^^xsd:anyURI ;
+    :hasStatement :FSBMonitoring2025Statement ;
+    :localPath "corpus/regulatory/fsb/FSB_AI_Monitoring_2025.pdf" ;
+    :retrievalDate "2026-09-22"^^xsd:date ;
+    :sha256 "f2e8149140babdb9f3fbbf6b787b47eb4ee6dcbc711fba0336b15bde1002b4c0" .
+
+:GoldmanSachs2025AnnualReport a owl:NamedIndividual,
+        :FirmAIGovernanceDisclosure ;
+    rdfs:label "Goldman Sachs — 2025 Annual Report" ;
+    :documentDate "2025" ;
+    :documentType "Annual report" ;
+    :documentURL "https://d3cobg6h0snvt3.cloudfront.net/investor-relations/financials/current/annual-reports/2025/annual-report.pdf"^^xsd:anyURI ;
+    :hasStatement :GoldmanOversight2025Statement ;
+    :localPath "corpus/firm-disclosures/goldman-sachs/GoldmanSachs_2025_Annual_Report.pdf" ;
+    :retrievalDate "2026-09-22"^^xsd:date ;
+    :sha256 "bc2682a526ab242b42bfa1ac0f26772dcd41686ece62e50642f19541bc6c20c3" .
+
+:HSBC2025AnnualReport a owl:NamedIndividual,
+        :FirmAIGovernanceDisclosure ;
+    rdfs:label "HSBC — 2025 Annual Report and Accounts" ;
+    :documentDate "2025" ;
+    :documentType "Annual report" ;
+    :documentURL "https://www.hsbc.com/-/files/hsbc/investors/hsbc-results/2025/annual/pdfs/hsbc-holdings-plc/260225-annual-report-and-accounts-2025.pdf?download=1"^^xsd:anyURI ;
+    :hasStatement :HSBCPrivacy2025Statement ;
+    :localPath "corpus/firm-disclosures/hsbc/HSBC_2025_Annual_Report.pdf" ;
+    :retrievalDate "2026-09-22"^^xsd:date ;
+    :sha256 "94aab2f5c83d1060ee95d344f1915833869fe4502dc635e4ab9ca84f496ee94b" .
+
+:HSBCPrinciplesDocument :hasStatement :HSBCAccountabilityStatement,
+        :HSBCBiasStatement,
+        :HSBCChallengeStatement,
+        :HSBCDataMinimisationStatement,
+        :HSBCEscalationStatement,
+        :HSBCMonitoringStatement,
+        :HSBCPrivacyStatement,
+        :HSBCSupplierPrivacyStatement,
+        :HSBCTestingStatement,
+        :HSBCTrainingStatement .
+
+:JPMorgan2025AnnualReport a owl:NamedIndividual,
+        :FirmAIGovernanceDisclosure ;
+    rdfs:label "JPMorgan Chase — 2025 Annual Report" ;
+    :documentDate "2025" ;
+    :documentType "Annual report" ;
+    :documentURL "https://www.jpmorganchase.com/content/dam/jpmc/jpmorgan-chase-and-co/investor-relations/documents/annualreport-2025.pdf"^^xsd:anyURI ;
+    :hasStatement :JPMorganApproval2025Statement,
+        :JPMorganTiering2025Statement ;
+    :localPath "corpus/firm-disclosures/jpmorgan/JPMorgan_2025_Annual_Report.pdf" ;
+    :retrievalDate "2026-09-22"^^xsd:date ;
+    :sha256 "2a3ee9733eafd01e7667c5540fbd797c4cc688d14f00638a877f5623d1316d9d" .
+
+:MASAIRiskToolkitRelease2026 a owl:NamedIndividual,
+        :SourceDocument ;
+    rdfs:label "MAS AIRM — MAS Partners Industry to Develop AI Risk Management Toolkit for the Financial Sector" ;
+    :documentDate "2026" ;
+    :documentType "Public source; see statement status" ;
+    :documentURL "https://www.sgpc.gov.sg/api/file/getfile/Media%20release_MAS%20Partners%20Industry%20to%20Develop%20AI%20Risk%20Management%20Toolkit%20for%20the%20Financial%20Sector.pdf?path=%2Fsgpcmedia%2Fmedia_releases%2Fmas%2Fpress_release%2FP-20260320-2%2Fattachment%2FMedia+release_MAS+Partners+Industry+to+Develop+AI+Risk+Management+Toolkit+for+the+Financial+Sector.pdf"^^xsd:anyURI ;
+    :hasStatement :MASConsultationStatusStatement ;
+    :localPath "corpus/regulatory/mas/MAS_AI_Risk_Toolkit_2026.pdf" ;
+    :retrievalDate "2026-09-22"^^xsd:date ;
+    :sha256 "4339a763163a5984b3d667ed951550322127bf02a4022e81a63009543cf71ab9" .
+
+:NAB2024AnnualReport :hasStatement :NABFrameworkReference2024Statement,
+        :NABHumanRights2024Statement .
+
+:NAB2025AnnualReport a owl:NamedIndividual,
+        :FirmAIGovernanceDisclosure ;
+    rdfs:label "NAB — 2025 Annual Report" ;
+    :documentDate "2025" ;
+    :documentType "Annual report" ;
+    :documentURL "https://www.nab.com.au/content/dam/nab/documents/reports/corporate/2025-annual-report.pdf"^^xsd:anyURI ;
+    :hasStatement :NABAssessment2025Statement,
+        :NABFramework2025Statement ;
+    :localPath "corpus/firm-disclosures/nab/NAB_2025_Annual_Report.pdf" ;
+    :retrievalDate "2026-09-22"^^xsd:date ;
+    :sha256 "14c32ba7ecb412a55e5e83b904d1c0b6b32be753009b76627096e5a76b8a7719" .
+
+:NISTGenAIProfileDocument a owl:NamedIndividual,
+        :SourceDocument ;
+    rdfs:label "NIST GenAI Profile — AI RMF: Generative Artificial Intelligence Profile" ;
+    :documentDate "2024" ;
+    :documentType "Public source; see statement status" ;
+    :documentURL "https://nvlpubs.nist.gov/nistpubs/ai/NIST.AI.600-1.pdf"^^xsd:anyURI ;
+    :hasStatement :NISTGenAIInventoryStatement,
+        :NISTGenAISupplierStatement ;
+    :localPath "corpus/regulatory/nist-ai-rmf/NIST_AI_600-1_GenAI_Profile.pdf" ;
+    :retrievalDate "2026-09-22"^^xsd:date ;
+    :sha256 "6e73620ab6b64e90ef2c04bf0e0d6246185a2f4b1b13cab0df494496cff89b6a" .
+
+:OAICCommercialAIDocument a owl:NamedIndividual,
+        :SourceDocument ;
+    rdfs:label "OAIC AI Privacy Guidance — Guidance on privacy and the use of commercially available AI products" ;
+    :documentDate "2025" ;
+    :documentType "Public source; see statement status" ;
+    :documentURL "https://www.oaic.gov.au/privacy/privacy-guidance-for-organisations-and-government-agencies/guidance-on-privacy-and-the-use-of-commercially-available-ai-products"^^xsd:anyURI ;
+    :hasStatement :OAICAIDueDiligenceStatement,
+        :OAICHumanOversightStatement,
+        :OAICPrivacyDisclosureStatement ;
+    :localPath "corpus/regulatory/oaic/OAIC_Commercial_AI_Privacy.html" ;
+    :retrievalDate "2026-09-22"^^xsd:date ;
+    :sha256 "0597c36944f9217c08fd9af81ae06a0679f79e70460e2dc343772620de786d83" .
+
+:Westpac2025AnnualReport a owl:NamedIndividual,
+        :FirmAIGovernanceDisclosure ;
+    rdfs:label "Westpac — 2025 Annual Report" ;
+    :documentDate "2025" ;
+    :documentType "Annual report" ;
+    :documentURL "https://www.westpac.com.au/content/dam/public/wbc/documents/pdf/aw/ic/wbc-annual-report-2025.pdf"^^xsd:anyURI ;
+    :hasStatement :WestpacStandard2025Statement ;
+    :localPath "corpus/firm-disclosures/westpac/Westpac_2025_Annual_Report.pdf" ;
+    :retrievalDate "2026-09-22"^^xsd:date ;
+    :sha256 "b57f4c5e4a9edfa7ca29ea1e0a9e076d13e44c7fec888c07d00eaccd5bee32e4" .
+
+:WestpacAIPolicyPage :hasStatement :WestpacAccountabilityStatement,
+        :WestpacContestabilityStatement,
+        :WestpacFairnessStatement,
+        :WestpacHumanOversightStatement,
+        :WestpacPrivacyStatement,
+        :WestpacReliabilityStatement,
+        :WestpacTransparencyStatement .
+
+# Expansion evidence snippets
+
+:ANZGuardrailsChallengeEvidence a owl:NamedIndividual,
+        :EvidenceSnippet ;
+    rdfs:label "ANZGuardrailsChallenge source evidence" ;
+    :confidenceLevel "Source text matched" ;
+    :exactText "We think this requirement should be able to be met through existing complaints mechanisms, rather than the establishment of new parallel processes." ;
+    :extractedFrom :ANZGuardrailsSubmission2024 ;
+    :extractionDate "2026-09-22"^^xsd:date ;
+    :pageReference "PDF page 5" ;
+    :sectionReference "Contestability" ;
+    :supportsAssertion :ANZGuardrailsChallengeStatement .
+
+:ANZGuardrailsEUReferenceEvidence a owl:NamedIndividual,
+        :EvidenceSnippet ;
+    rdfs:label "ANZGuardrailsEUReference source evidence" ;
+    :confidenceLevel "Source text matched" ;
+    :exactText "A list-based approach is taken by the European Union in its Artificial Intelligence Act" ;
+    :extractedFrom :ANZGuardrailsSubmission2024 ;
+    :extractionDate "2026-09-22"^^xsd:date ;
+    :pageReference "PDF page 3" ;
+    :sectionReference "Framework references" ;
+    :supportsAssertion :ANZGuardrailsEUReferenceStatement .
+
+:ANZGuardrailsFairnessEvidence a owl:NamedIndividual,
+        :EvidenceSnippet ;
+    rdfs:label "ANZGuardrailsFairness source evidence" ;
+    :confidenceLevel "Source text matched" ;
+    :exactText "In using AI, our priority is ensuring that our customers are treated fairly, and that their information is secure." ;
+    :extractedFrom :ANZGuardrailsSubmission2024 ;
+    :extractionDate "2026-09-22"^^xsd:date ;
+    :pageReference "PDF page 2" ;
+    :sectionReference "Fairness" ;
+    :supportsAssertion :ANZGuardrailsFairnessStatement .
+
+:ANZGuardrailsJurisdictionEvidence a owl:NamedIndividual,
+        :EvidenceSnippet ;
+    rdfs:label "ANZGuardrailsJurisdiction source evidence" ;
+    :confidenceLevel "Source text matched" ;
+    :exactText "The guardrails do not contain any territorial nexus." ;
+    :extractedFrom :ANZGuardrailsSubmission2024 ;
+    :extractionDate "2026-09-22"^^xsd:date ;
+    :pageReference "PDF page 4" ;
+    :sectionReference "Jurisdiction" ;
+    :supportsAssertion :ANZGuardrailsJurisdictionStatement .
+
+:ANZHomeLoanEthicsEvidence a owl:NamedIndividual,
+        :EvidenceSnippet ;
+    rdfs:label "ANZHomeLoanEthics source evidence" ;
+    :confidenceLevel "Source text matched" ;
+    :exactText "Our use of AI and other advanced technologies is guided by our Data Ethics Principles" ;
+    :extractedFrom :ANZHomeLoanAutomation2024 ;
+    :extractionDate "2026-09-22"^^xsd:date ;
+    :pageReference "Not paginated" ;
+    :sectionReference "Accountability" ;
+    :supportsAssertion :ANZHomeLoanEthicsStatement .
+
+:ANZModelPolicy2025Evidence a owl:NamedIndividual,
+        :EvidenceSnippet ;
+    rdfs:label "ANZModelPolicy2025 source evidence" ;
+    :confidenceLevel "Source text matched" ;
+    :exactText "The PD, LGD and EAD models are subject to the Group’s model risk policy that stipulates periodic model monitoring and re-validation, and defines approval procedures and authorities according to model materiality." ;
+    :extractedFrom :ANZ2025AnnualReport ;
+    :extractionDate "2026-09-22"^^xsd:date ;
+    :pageReference "PDF page 141" ;
+    :sectionReference "Allowance for expected credit losses" ;
+    :supportsAssertion :ANZModelPolicy2025Statement .
+
+:ASIC798DocumentationEvidence a owl:NamedIndividual,
+        :EvidenceSnippet ;
+    rdfs:label "ASIC798Documentation source evidence" ;
+    :confidenceLevel "Source text matched" ;
+    :exactText "incomplete model documentation with missing critical elements" ;
+    :extractedFrom :ASICREP798Document ;
+    :extractionDate "2026-09-22"^^xsd:date ;
+    :pageReference "PDF page 7" ;
+    :sectionReference "Documentation" ;
+    :supportsAssertion :ASIC798DocumentationStatement .
+
+:ASIC798GovernanceGapEvidence a owl:NamedIndividual,
+        :EvidenceSnippet ;
+    rdfs:label "ASIC798GovernanceGap source evidence" ;
+    :confidenceLevel "Source text matched" ;
+    :exactText "some licensees are adopting AI more rapidly than their risk and governance arrangements are being updated" ;
+    :extractedFrom :ASICREP798Document ;
+    :extractionDate "2026-09-22"^^xsd:date ;
+    :pageReference "PDF page 3" ;
+    :sectionReference "Accountability" ;
+    :supportsAssertion :ASIC798GovernanceGapStatement .
+
+:ASIC798ThirdPartiesEvidence a owl:NamedIndividual,
+        :EvidenceSnippet ;
+    rdfs:label "ASIC798ThirdParties source evidence" ;
+    :confidenceLevel "Source text matched" ;
+    :exactText "Many licensees relied heavily on third parties for their AI models, but not all had appropriate governance arrangements in place to manage risk" ;
+    :extractedFrom :ASICREP798Document ;
+    :extractionDate "2026-09-22"^^xsd:date ;
+    :pageReference "PDF page 31" ;
+    :sectionReference "Third-party governance" ;
+    :supportsAssertion :ASIC798ThirdPartiesStatement .
+
+:ASICComplaintReasonsEvidence a owl:NamedIndividual,
+        :EvidenceSnippet ;
+    rdfs:label "ASICComplaintReasons source evidence" ;
+    :confidenceLevel "Source text matched" ;
+    :exactText "If a financial firm rejects or partially rejects the complaint, the IDR response must clearly set out the reasons for the decision" ;
+    :extractedFrom :ASICRG271Document ;
+    :extractionDate "2026-09-22"^^xsd:date ;
+    :pageReference "PDF page 20" ;
+    :sectionReference "RG 271.54" ;
+    :supportsAssertion :ASICComplaintReasonsStatement .
+
+:ASICComplaintTimeframeEvidence a owl:NamedIndividual,
+        :EvidenceSnippet ;
+    rdfs:label "ASICComplaintTimeframe source evidence" ;
+    :confidenceLevel "Source text matched" ;
+    :exactText "A financial firm must provide an IDR response to a complainant no later than 30 calendar days after receiving the complaint. However, in some cases a different timeframe applies" ;
+    :extractedFrom :ASICRG271Document ;
+    :extractionDate "2026-09-22"^^xsd:date ;
+    :pageReference "PDF page 21" ;
+    :sectionReference "RG 271.56; see RG 271.58 and RG 271.64–66" ;
+    :supportsAssertion :ASICComplaintTimeframeStatement .
+
+:AUAccountabilityEvidence a owl:NamedIndividual,
+        :EvidenceSnippet ;
+    rdfs:label "AUAccountability source evidence" ;
+    :confidenceLevel "Source text matched" ;
+    :exactText "Accountability is the first step to using AI responsibly." ;
+    :extractedFrom :AUGuidance2026Document ;
+    :extractionDate "2026-09-22"^^xsd:date ;
+    :pageReference "PDF page 19" ;
+    :sectionReference "1. Decide who is accountable" ;
+    :supportsAssertion :AUAccountabilityStatement .
+
+:AUSupplierAccountabilityEvidence a owl:NamedIndividual,
+        :EvidenceSnippet ;
+    rdfs:label "AUSupplierAccountability source evidence" ;
+    :confidenceLevel "Source text matched" ;
+    :exactText "Understanding your role in the AI supply chain and identifying which parties are responsible for maintaining the performance, safety and integrity of AI systems throughout their lifecycle is key to effective accountability." ;
+    :extractedFrom :AUGuidance2026Document ;
+    :extractionDate "2026-09-22"^^xsd:date ;
+    :pageReference "PDF page 19" ;
+    :sectionReference "1.2 Supply chain accountabilities" ;
+    :supportsAssertion :AUSupplierAccountabilityStatement .
+
+:CBAAccountabilityEvidence a owl:NamedIndividual,
+        :EvidenceSnippet ;
+    rdfs:label "CBAAccountability source evidence" ;
+    :confidenceLevel "Source text matched" ;
+    :exactText "The Group employee(s) accountable for an AI system should be identified, and accountabilities for an AI system during its lifecycle should be documented." ;
+    :extractedFrom :CBAArtificialIntelligenceApproachPage ;
+    :extractionDate "2026-09-22"^^xsd:date ;
+    :pageReference "Not paginated" ;
+    :sectionReference "Accountability" ;
+    :supportsAssertion :CBAAccountabilityStatement .
+
+:CBAAICommittee2025Evidence a owl:NamedIndividual,
+        :EvidenceSnippet ;
+    rdfs:label "CBAAICommittee2025 source evidence" ;
+    :confidenceLevel "Source text matched" ;
+    :exactText "AI Risk Committee" ;
+    :extractedFrom :CBA2025AnnualReport ;
+    :extractionDate "2026-09-22"^^xsd:date ;
+    :pageReference "PDF page 157" ;
+    :sectionReference "Strategic risk: Key Management Committees" ;
+    :supportsAssertion :CBAAICommittee2025Statement,
+        :CBAAIRiskCommittee2025 .
+
+:CBAAISystemDefinitionEvidence a owl:NamedIndividual,
+        :EvidenceSnippet ;
+    rdfs:label "CBAAISystemDefinition source evidence" ;
+    :confidenceLevel "Source text matched" ;
+    :exactText "An AI system is a machine-based system(s) that, for explicit or implicit objectives, infers, from the input it receives, how to generate outputs such as predictions, content, recommendations, or decisions that can influence physical or virtual environments. Different AI systems vary in their levels of autonomy and adaptiveness after deployment." ;
+    :extractedFrom :CBAArtificialIntelligenceApproachPage ;
+    :extractionDate "2026-09-22"^^xsd:date ;
+    :pageReference "Not paginated" ;
+    :sectionReference "Our definition of AI" ;
+    :supportsAssertion :CBAAISystemDefinition,
+        :CBAAISystemDefinitionStatement .
+
+:CBAFairnessEvidence a owl:NamedIndividual,
+        :EvidenceSnippet ;
+    rdfs:label "CBAFairness source evidence" ;
+    :confidenceLevel "Source text matched" ;
+    :exactText "AI system outputs should not unfairly discriminate." ;
+    :extractedFrom :CBAArtificialIntelligenceApproachPage ;
+    :extractionDate "2026-09-22"^^xsd:date ;
+    :pageReference "Not paginated" ;
+    :sectionReference "Fairness" ;
+    :supportsAssertion :CBAFairnessStatement .
+
+:CBAHumanOversightEvidence a owl:NamedIndividual,
+        :EvidenceSnippet ;
+    rdfs:label "CBAHumanOversight source evidence" ;
+    :confidenceLevel "Source text matched" ;
+    :exactText "Human oversight of AI systems is necessary." ;
+    :extractedFrom :CBAArtificialIntelligenceApproachPage ;
+    :extractionDate "2026-09-22"^^xsd:date ;
+    :pageReference "Not paginated" ;
+    :sectionReference "Human oversight" ;
+    :supportsAssertion :CBAHumanOversightStatement .
+
+:CBAPrivacyEvidence a owl:NamedIndividual,
+        :EvidenceSnippet ;
+    rdfs:label "CBAPrivacy source evidence" ;
+    :confidenceLevel "Source text matched" ;
+    :exactText "AI systems should comply with privacy and data protection laws." ;
+    :extractedFrom :CBAArtificialIntelligenceApproachPage ;
+    :extractionDate "2026-09-22"^^xsd:date ;
+    :pageReference "Not paginated" ;
+    :sectionReference "Privacy" ;
+    :supportsAssertion :CBAPrivacyStatement .
+
+:CBAReliabilityEvidence a owl:NamedIndividual,
+        :EvidenceSnippet ;
+    rdfs:label "CBAReliability source evidence" ;
+    :confidenceLevel "Source text matched" ;
+    :exactText "AI systems should perform consistently with their specifications and in accordance with their intended purpose." ;
+    :extractedFrom :CBAArtificialIntelligenceApproachPage ;
+    :extractionDate "2026-09-22"^^xsd:date ;
+    :pageReference "Not paginated" ;
+    :sectionReference "Testing and monitoring" ;
+    :supportsAssertion :CBAReliabilityStatement .
+
+:CBARiskDefinition2025Evidence a owl:NamedIndividual,
+        :EvidenceSnippet ;
+    rdfs:label "CBARiskDefinition2025 source evidence" ;
+    :confidenceLevel "Source text matched" ;
+    :exactText "The risk of failing to execute on strategy or loss of competitive advantage due to failure to deliver AI systems responsibly and/or in a timely manner." ;
+    :extractedFrom :CBA2025AnnualReport ;
+    :extractionDate "2026-09-22"^^xsd:date ;
+    :pageReference "PDF page 157" ;
+    :sectionReference "Artificial Intelligence Risk" ;
+    :supportsAssertion :CBARiskDefinition2025Statement .
+
+:CBAToolkit2025Evidence a owl:NamedIndividual,
+        :EvidenceSnippet ;
+    rdfs:label "CBAToolkit2025 source evidence" ;
+    :confidenceLevel "Source text matched" ;
+    :exactText "Our responsible AI toolkits provide model owners and developers with clear, practical guidance to assess model performance, test for bias" ;
+    :extractedFrom :CBA2025AnnualReport ;
+    :extractionDate "2026-09-22"^^xsd:date ;
+    :pageReference "PDF page 48" ;
+    :sectionReference "Testing and monitoring" ;
+    :supportsAssertion :CBAToolkit2025Statement .
+
+:CBATransparencyEvidence a owl:NamedIndividual,
+        :EvidenceSnippet ;
+    rdfs:label "CBATransparency source evidence" ;
+    :confidenceLevel "Source text matched" ;
+    :exactText "What an AI system does should be understandable." ;
+    :extractedFrom :CBAArtificialIntelligenceApproachPage ;
+    :extractionDate "2026-09-22"^^xsd:date ;
+    :pageReference "Not paginated" ;
+    :sectionReference "Transparency" ;
+    :supportsAssertion :CBATransparencyStatement .
+
+:EUCreditworthinessEvidence a owl:NamedIndividual,
+        :EvidenceSnippet ;
+    rdfs:label "EUCreditworthiness source evidence" ;
+    :confidenceLevel "Source text matched" ;
+    :exactText "AI systems intended to be used to evaluate the creditworthiness of natural persons or establish their credit score, with the exception of AI systems used for the purpose of detecting financial fraud" ;
+    :extractedFrom :EUAIActDocument ;
+    :extractionDate "2026-09-22"^^xsd:date ;
+    :pageReference "PDF page 127" ;
+    :sectionReference "Annex III 5(b)" ;
+    :supportsAssertion :EUCreditworthinessStatement .
+
+:EUDocumentationEvidence a owl:NamedIndividual,
+        :EvidenceSnippet ;
+    rdfs:label "EUDocumentation source evidence" ;
+    :confidenceLevel "Source text matched" ;
+    :exactText "The technical documentation of a high-risk AI system shall be drawn up before that system is placed on the market or put into service and shall be kept up-to date." ;
+    :extractedFrom :EUAIActDocument ;
+    :extractionDate "2026-09-22"^^xsd:date ;
+    :pageReference "PDF page 58" ;
+    :sectionReference "Article 11(1)" ;
+    :supportsAssertion :EUDocumentationStatement .
+
+:EUExplanationEvidence a owl:NamedIndividual,
+        :EvidenceSnippet ;
+    rdfs:label "EUExplanation source evidence" ;
+    :confidenceLevel "Source text matched" ;
+    :exactText "clear and meaningful explanations of the role of the AI system in the decision-making procedure and the main elements of the decision taken" ;
+    :extractedFrom :EUAIActDocument ;
+    :extractionDate "2026-09-22"^^xsd:date ;
+    :pageReference "PDF page 110" ;
+    :sectionReference "Article 86" ;
+    :supportsAssertion :EUExplanationStatement .
+
+:EUTerritorialScopeEvidence a owl:NamedIndividual,
+        :EvidenceSnippet ;
+    rdfs:label "EUTerritorialScope source evidence" ;
+    :confidenceLevel "Source text matched" ;
+    :exactText "where the output produced by the AI system is used in the Union" ;
+    :extractedFrom :EUAIActDocument ;
+    :extractionDate "2026-09-22"^^xsd:date ;
+    :pageReference "PDF page 45" ;
+    :sectionReference "Article 2(1)(c)" ;
+    :supportsAssertion :EUTerritorialScopeStatement .
+
+:FSBConcentration2024Evidence a owl:NamedIndividual,
+        :EvidenceSnippet ;
+    rdfs:label "FSBConcentration2024 source evidence" ;
+    :confidenceLevel "Source text matched" ;
+    :exactText "Third-party dependencies and service provider concentration" ;
+    :extractedFrom :FSBAI2024Document ;
+    :extractionDate "2026-09-22"^^xsd:date ;
+    :pageReference "PDF page 5" ;
+    :sectionReference "Executive summary" ;
+    :supportsAssertion :FSBConcentration2024Statement .
+
+:FSBModelRisk2024Evidence a owl:NamedIndividual,
+        :EvidenceSnippet ;
+    rdfs:label "FSBModelRisk2024 source evidence" ;
+    :confidenceLevel "Source text matched" ;
+    :exactText "Model risk, data quality and governance" ;
+    :extractedFrom :FSBAI2024Document ;
+    :extractionDate "2026-09-22"^^xsd:date ;
+    :pageReference "PDF page 5" ;
+    :sectionReference "Executive summary" ;
+    :supportsAssertion :FSBModelRisk2024Statement .
+
+:FSBMonitoring2025Evidence a owl:NamedIndividual,
+        :EvidenceSnippet ;
+    rdfs:label "FSBMonitoring2025 source evidence" ;
+    :confidenceLevel "Source text matched" ;
+    :exactText "this report examines how financial authorities can monitor AI adoption and assess related vulnerabilities" ;
+    :extractedFrom :FSBAI2025Document ;
+    :extractionDate "2026-09-22"^^xsd:date ;
+    :pageReference "PDF page 5" ;
+    :sectionReference "Executive summary" ;
+    :supportsAssertion :FSBMonitoring2025Statement .
+
+:GoldmanOversight2025Evidence a owl:NamedIndividual,
+        :EvidenceSnippet ;
+    rdfs:label "GoldmanOversight2025 source evidence" ;
+    :confidenceLevel "Source text matched" ;
+    :exactText "the Firmwide Artificial Intelligence Risk and Controls Committee, which oversees risks associated with the use of AI, reports to the Firmwide Technology Risk Committee." ;
+    :extractedFrom :GoldmanSachs2025AnnualReport ;
+    :extractionDate "2026-09-22"^^xsd:date ;
+    :pageReference "PDF page 128" ;
+    :sectionReference "Risk management governance" ;
+    :supportsAssertion :GoldmanOversight2025Statement .
+
+:HSBCAccountabilityEvidence a owl:NamedIndividual,
+        :EvidenceSnippet ;
+    rdfs:label "HSBCAccountability source evidence" ;
+    :confidenceLevel "Source text matched" ;
+    :exactText "We establish clear accountability for our AI systems." ;
+    :extractedFrom :HSBCPrinciplesDocument ;
+    :extractionDate "2026-09-22"^^xsd:date ;
+    :pageReference "PDF page 7" ;
+    :sectionReference "Accountability" ;
+    :supportsAssertion :HSBCAccountabilityStatement .
+
+:HSBCBiasEvidence a owl:NamedIndividual,
+        :EvidenceSnippet ;
+    rdfs:label "HSBCBias source evidence" ;
+    :confidenceLevel "Source text matched" ;
+    :exactText "We seek to detect unfair bias and minimise its presence in our use of AI." ;
+    :extractedFrom :HSBCPrinciplesDocument ;
+    :extractionDate "2026-09-22"^^xsd:date ;
+    :pageReference "PDF page 6" ;
+    :sectionReference "Fairness" ;
+    :supportsAssertion :HSBCBiasStatement .
+
+:HSBCChallengeEvidence a owl:NamedIndividual,
+        :EvidenceSnippet ;
+    rdfs:label "HSBCChallenge source evidence" ;
+    :confidenceLevel "Source text matched" ;
+    :exactText "We provide meaningful forums for challenging and questioning design or use of AI." ;
+    :extractedFrom :HSBCPrinciplesDocument ;
+    :extractionDate "2026-09-22"^^xsd:date ;
+    :pageReference "PDF page 9" ;
+    :sectionReference "Contestability" ;
+    :supportsAssertion :HSBCChallengeStatement .
+
+:HSBCDataMinimisationEvidence a owl:NamedIndividual,
+        :EvidenceSnippet ;
+    rdfs:label "HSBCDataMinimisation source evidence" ;
+    :confidenceLevel "Source text matched" ;
+    :exactText "When using personal data, we seek to use only that data which is appropriate for the purpose." ;
+    :extractedFrom :HSBCPrinciplesDocument ;
+    :extractionDate "2026-09-22"^^xsd:date ;
+    :pageReference "PDF page 4" ;
+    :sectionReference "Privacy" ;
+    :supportsAssertion :HSBCDataMinimisationStatement .
+
+:HSBCEscalationEvidence a owl:NamedIndividual,
+        :EvidenceSnippet ;
+    rdfs:label "HSBCEscalation source evidence" ;
+    :confidenceLevel "Source text matched" ;
+    :exactText "We escalate and address concerns to appropriate accountable executives." ;
+    :extractedFrom :HSBCPrinciplesDocument ;
+    :extractionDate "2026-09-22"^^xsd:date ;
+    :pageReference "PDF page 8" ;
+    :sectionReference "Human oversight" ;
+    :supportsAssertion :HSBCEscalationStatement .
+
+:HSBCMonitoringEvidence a owl:NamedIndividual,
+        :EvidenceSnippet ;
+    rdfs:label "HSBCMonitoring source evidence" ;
+    :confidenceLevel "Source text matched" ;
+    :exactText "We monitor our use of AI for unintended consequences by regularly reviewing inputs and outputs." ;
+    :extractedFrom :HSBCPrinciplesDocument ;
+    :extractionDate "2026-09-22"^^xsd:date ;
+    :pageReference "PDF page 6" ;
+    :sectionReference "Testing and monitoring" ;
+    :supportsAssertion :HSBCMonitoringStatement .
+
+:HSBCPrivacy2025Evidence a owl:NamedIndividual,
+        :EvidenceSnippet ;
+    rdfs:label "HSBCPrivacy2025 source evidence" ;
+    :confidenceLevel "Source text matched" ;
+    :exactText "HSBC’s Principles for the Ethical Use of Data and Artificial Intelligence include how we seek to respect the right to privacy while making use of these technologies." ;
+    :extractedFrom :HSBC2025AnnualReport ;
+    :extractionDate "2026-09-22"^^xsd:date ;
+    :pageReference "PDF page 61" ;
+    :sectionReference "Privacy" ;
+    :supportsAssertion :HSBCPrivacy2025Statement .
+
+:HSBCPrivacyEvidence a owl:NamedIndividual,
+        :EvidenceSnippet ;
+    rdfs:label "HSBCPrivacy source evidence" ;
+    :confidenceLevel "Source text matched" ;
+    :exactText "We embed privacy considerations into design and approval processes." ;
+    :extractedFrom :HSBCPrinciplesDocument ;
+    :extractionDate "2026-09-22"^^xsd:date ;
+    :pageReference "PDF page 4" ;
+    :sectionReference "Privacy" ;
+    :supportsAssertion :HSBCPrivacyStatement .
+
+:HSBCSupplierPrivacyEvidence a owl:NamedIndividual,
+        :EvidenceSnippet ;
+    rdfs:label "HSBCSupplierPrivacy source evidence" ;
+    :confidenceLevel "Source text matched" ;
+    :exactText "We exercise supply chain control and, where appropriate, will vet privacy and security protections of third parties before sharing personal data." ;
+    :extractedFrom :HSBCPrinciplesDocument ;
+    :extractionDate "2026-09-22"^^xsd:date ;
+    :pageReference "PDF page 8" ;
+    :sectionReference "Third-party governance" ;
+    :supportsAssertion :HSBCSupplierPrivacyStatement .
+
+:HSBCTestingEvidence a owl:NamedIndividual,
+        :EvidenceSnippet ;
+    rdfs:label "HSBCTesting source evidence" ;
+    :confidenceLevel "Source text matched" ;
+    :exactText "We test and monitor whether AI systems are working as they should both before being deployed and on an ongoing basis." ;
+    :extractedFrom :HSBCPrinciplesDocument ;
+    :extractionDate "2026-09-22"^^xsd:date ;
+    :pageReference "PDF page 7" ;
+    :sectionReference "Testing and monitoring" ;
+    :supportsAssertion :HSBCTestingStatement .
+
+:HSBCTrainingEvidence a owl:NamedIndividual,
+        :EvidenceSnippet ;
+    rdfs:label "HSBCTraining source evidence" ;
+    :confidenceLevel "Source text matched" ;
+    :exactText "We train our people to understand the limitations of AI systems as well as their capabilities." ;
+    :extractedFrom :HSBCPrinciplesDocument ;
+    :extractionDate "2026-09-22"^^xsd:date ;
+    :pageReference "PDF page 7" ;
+    :sectionReference "Accountability" ;
+    :supportsAssertion :HSBCTrainingStatement .
+
+:JPMorganApproval2025Evidence a owl:NamedIndividual,
+        :EvidenceSnippet ;
+    rdfs:label "JPMorganApproval2025 source evidence" ;
+    :confidenceLevel "Source text matched" ;
+    :exactText "Under the Firm’s Estimations and Model Risk Management Policy, MRGR reviews and approves new models, as well as material changes to existing models, prior to their use. In certain circumstances, exceptions may be granted to the Firm’s policy to allow a model to be used prior to review or approval." ;
+    :extractedFrom :JPMorgan2025AnnualReport ;
+    :extractionDate "2026-09-22"^^xsd:date ;
+    :pageReference "PDF page 185" ;
+    :sectionReference "Approval" ;
+    :supportsAssertion :JPMorganApproval2025Statement,
+        :JPMorganModelReviewApproval2025 .
+
+:JPMorganTiering2025Evidence a owl:NamedIndividual,
+        :EvidenceSnippet ;
+    rdfs:label "JPMorganTiering2025 source evidence" ;
+    :confidenceLevel "Source text matched" ;
+    :exactText "Models are tiered based on an internal standard according to their complexity, the exposure associated with the model and the Firm’s reliance on the model." ;
+    :extractedFrom :JPMorgan2025AnnualReport ;
+    :extractionDate "2026-09-22"^^xsd:date ;
+    :pageReference "PDF page 185" ;
+    :sectionReference "Risk terminology" ;
+    :supportsAssertion :JPMorganTiering2025Statement .
+
+:MASConsultationStatusEvidence a owl:NamedIndividual,
+        :EvidenceSnippet ;
+    rdfs:label "MASConsultationStatus source evidence" ;
+    :confidenceLevel "Source text matched" ;
+    :exactText "MAS is presently reviewing responses to an earlier public consultation on a set of Guidelines on AI Risk Management." ;
+    :extractedFrom :MASAIRiskToolkitRelease2026 ;
+    :extractionDate "2026-09-22"^^xsd:date ;
+    :pageReference "PDF page 1" ;
+    :sectionReference "Paragraph 3" ;
+    :supportsAssertion :MASConsultationStatusStatement .
+
+:NABAssessment2025Evidence a owl:NamedIndividual,
+        :EvidenceSnippet ;
+    rdfs:label "NABAssessment2025 source evidence" ;
+    :confidenceLevel "Source text matched" ;
+    :exactText "We review how personal information is used and assess AI use cases for ethical considerations, including bias, discrimination and Indigenous Data Sovereignty." ;
+    :extractedFrom :NAB2025AnnualReport ;
+    :extractionDate "2026-09-22"^^xsd:date ;
+    :pageReference "PDF page 20" ;
+    :sectionReference "Fairness" ;
+    :supportsAssertion :NABAssessment2025Statement .
+
+:NABFramework2025Evidence a owl:NamedIndividual,
+        :EvidenceSnippet ;
+    rdfs:label "NABFramework2025 source evidence" ;
+    :confidenceLevel "Source text matched" ;
+    :exactText "All AI initiatives are governed by NAB’s AI Framework, which aligns with the Australian Government AI Ethical Principles, and integrates with our risk, change and security practices." ;
+    :extractedFrom :NAB2025AnnualReport ;
+    :extractionDate "2026-09-22"^^xsd:date ;
+    :pageReference "PDF page 20" ;
+    :sectionReference "Framework references" ;
+    :supportsAssertion :NABFramework2025Statement .
+
+:NABFrameworkReference2024Evidence a owl:NamedIndividual,
+        :EvidenceSnippet ;
+    rdfs:label "NABFrameworkReference2024 source evidence" ;
+    :confidenceLevel "Source text matched" ;
+    :exactText "Aligned to the Australian Government AI Ethical Principles" ;
+    :extractedFrom :NAB2024AnnualReport ;
+    :extractionDate "2026-09-22"^^xsd:date ;
+    :pageReference "PDF page 51" ;
+    :sectionReference "Framework references" ;
+    :supportsAssertion :NABFrameworkReference2024Statement .
+
+:NABHumanRights2024Evidence a owl:NamedIndividual,
+        :EvidenceSnippet ;
+    rdfs:label "NABHumanRights2024 source evidence" ;
+    :confidenceLevel "Source text matched" ;
+    :exactText "In 2024, NAB integrated the use of this tool into its data ethics processes for AI." ;
+    :extractedFrom :NAB2024AnnualReport ;
+    :extractionDate "2026-09-22"^^xsd:date ;
+    :pageReference "PDF page 56" ;
+    :sectionReference "Human rights and AI" ;
+    :supportsAssertion :NABHumanRights2024Statement .
+
+:NISTGenAIInventoryEvidence a owl:NamedIndividual,
+        :EvidenceSnippet ;
+    rdfs:label "NISTGenAIInventory source evidence" ;
+    :confidenceLevel "Source text matched" ;
+    :exactText "Enumerate organizational GAI systems for incorporation into AI system inventory and adjust AI system inventory requirements to account for GAI risks." ;
+    :extractedFrom :NISTGenAIProfileDocument ;
+    :extractionDate "2026-09-22"^^xsd:date ;
+    :pageReference "PDF page 20" ;
+    :sectionReference "GV-1.6-001" ;
+    :supportsAssertion :NISTGenAIInventoryStatement .
+
+:NISTGenAISupplierEvidence a owl:NamedIndividual,
+        :EvidenceSnippet ;
+    rdfs:label "NISTGenAISupplier source evidence" ;
+    :confidenceLevel "Source text matched" ;
+    :exactText "GAI value chains involve many third-party components such as procured datasets, pre-trained models, and software libraries." ;
+    :extractedFrom :NISTGenAIProfileDocument ;
+    :extractionDate "2026-09-22"^^xsd:date ;
+    :pageReference "PDF page 16" ;
+    :sectionReference "2.12 Value Chain and Component Integration" ;
+    :supportsAssertion :NISTGenAISupplierStatement .
+
+:OAICAIDueDiligenceEvidence a owl:NamedIndividual,
+        :EvidenceSnippet ;
+    rdfs:label "OAICAIDueDiligence source evidence" ;
+    :confidenceLevel "Source text matched" ;
+    :exactText "When looking to adopt a commercially available product, organisations should conduct due diligence to ensure the product is suitable to its intended uses." ;
+    :extractedFrom :OAICCommercialAIDocument ;
+    :extractionDate "2026-09-22"^^xsd:date ;
+    :pageReference "Not paginated" ;
+    :sectionReference "Top five takeaways" ;
+    :supportsAssertion :OAICAIDueDiligenceStatement .
+
+:OAICHumanOversightEvidence a owl:NamedIndividual,
+        :EvidenceSnippet ;
+    rdfs:label "OAICHumanOversight source evidence" ;
+    :confidenceLevel "Source text matched" ;
+    :exactText "how human oversight can be embedded into processes" ;
+    :extractedFrom :OAICCommercialAIDocument ;
+    :extractionDate "2026-09-22"^^xsd:date ;
+    :pageReference "Not paginated" ;
+    :sectionReference "Top five takeaways" ;
+    :supportsAssertion :OAICHumanOversightStatement .
+
+:OAICPrivacyDisclosureEvidence a owl:NamedIndividual,
+        :EvidenceSnippet ;
+    rdfs:label "OAICPrivacyDisclosure source evidence" ;
+    :confidenceLevel "Source text matched" ;
+    :exactText "Businesses should update their privacy policies and notifications with clear and transparent information about their use of AI" ;
+    :extractedFrom :OAICCommercialAIDocument ;
+    :extractionDate "2026-09-22"^^xsd:date ;
+    :pageReference "Not paginated" ;
+    :sectionReference "Top five takeaways" ;
+    :supportsAssertion :OAICPrivacyDisclosureStatement .
+
+:WestpacAccountabilityEvidence a owl:NamedIndividual,
+        :EvidenceSnippet ;
+    rdfs:label "WestpacAccountability source evidence" ;
+    :confidenceLevel "Source text matched" ;
+    :exactText "The people responsible for the different phases of the AI system lifecycle should be identifiable and remain accountable for the outcomes of the AI system." ;
+    :extractedFrom :WestpacAIPolicyPage ;
+    :extractionDate "2026-09-22"^^xsd:date ;
+    :pageReference "Not paginated" ;
+    :sectionReference "Accountability" ;
+    :supportsAssertion :WestpacAccountabilityStatement .
+
+:WestpacContestabilityEvidence a owl:NamedIndividual,
+        :EvidenceSnippet ;
+    rdfs:label "WestpacContestability source evidence" ;
+    :confidenceLevel "Source text matched" ;
+    :exactText "When an AI system significantly impacts a person, community, group or environment, there should be mechanisms in place to allow people to challenge the use or outcomes of the AI system." ;
+    :extractedFrom :WestpacAIPolicyPage ;
+    :extractionDate "2026-09-22"^^xsd:date ;
+    :pageReference "Not paginated" ;
+    :sectionReference "Contestability" ;
+    :supportsAssertion :WestpacContestabilityStatement .
+
+:WestpacFairnessEvidence a owl:NamedIndividual,
+        :EvidenceSnippet ;
+    rdfs:label "WestpacFairness source evidence" ;
+    :confidenceLevel "Source text matched" ;
+    :exactText "AI systems should be inclusive and accessible and should not involve or result in unfair discrimination against individuals, communities, or groups." ;
+    :extractedFrom :WestpacAIPolicyPage ;
+    :extractionDate "2026-09-22"^^xsd:date ;
+    :pageReference "Not paginated" ;
+    :sectionReference "Fairness" ;
+    :supportsAssertion :WestpacFairnessStatement .
+
+:WestpacHumanOversightEvidence a owl:NamedIndividual,
+        :EvidenceSnippet ;
+    rdfs:label "WestpacHumanOversight source evidence" ;
+    :confidenceLevel "Source text matched" ;
+    :exactText "Human oversight of AI systems should be enabled." ;
+    :extractedFrom :WestpacAIPolicyPage ;
+    :extractionDate "2026-09-22"^^xsd:date ;
+    :pageReference "Not paginated" ;
+    :sectionReference "Human oversight" ;
+    :supportsAssertion :WestpacHumanOversightStatement .
+
+:WestpacPrivacyEvidence a owl:NamedIndividual,
+        :EvidenceSnippet ;
+    rdfs:label "WestpacPrivacy source evidence" ;
+    :confidenceLevel "Source text matched" ;
+    :exactText "AI systems should respect and uphold privacy rights, data protection and ensure the security of data." ;
+    :extractedFrom :WestpacAIPolicyPage ;
+    :extractionDate "2026-09-22"^^xsd:date ;
+    :pageReference "Not paginated" ;
+    :sectionReference "Privacy" ;
+    :supportsAssertion :WestpacPrivacyStatement .
+
+:WestpacReliabilityEvidence a owl:NamedIndividual,
+        :EvidenceSnippet ;
+    rdfs:label "WestpacReliability source evidence" ;
+    :confidenceLevel "Source text matched" ;
+    :exactText "AI systems should operate reliably in accordance with their intended purpose." ;
+    :extractedFrom :WestpacAIPolicyPage ;
+    :extractionDate "2026-09-22"^^xsd:date ;
+    :pageReference "Not paginated" ;
+    :sectionReference "Testing and monitoring" ;
+    :supportsAssertion :WestpacReliabilityStatement .
+
+:WestpacStandard2025Evidence a owl:NamedIndividual,
+        :EvidenceSnippet ;
+    rdfs:label "WestpacStandard2025 source evidence" ;
+    :confidenceLevel "Source text matched" ;
+    :exactText "We’re guided by Westpac’s Responsible AI Principles, along with our AI Risk Management Standard (AIRMS) and Responsible AI Playbook." ;
+    :extractedFrom :Westpac2025AnnualReport ;
+    :extractionDate "2026-09-22"^^xsd:date ;
+    :pageReference "PDF page 41" ;
+    :sectionReference "Documentation" ;
+    :supportsAssertion :WestpacStandard2025Statement .
+
+:WestpacTransparencyEvidence a owl:NamedIndividual,
+        :EvidenceSnippet ;
+    rdfs:label "WestpacTransparency source evidence" ;
+    :confidenceLevel "Source text matched" ;
+    :exactText "There should be transparency and responsible disclosure so people can understand when they are being significantly impacted by AI and know when an AI system is engaging with them." ;
+    :extractedFrom :WestpacAIPolicyPage ;
+    :extractionDate "2026-09-22"^^xsd:date ;
+    :pageReference "Not paginated" ;
+    :sectionReference "Transparency" ;
+    :supportsAssertion :WestpacTransparencyStatement .

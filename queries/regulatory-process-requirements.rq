@@ -1,0 +1,21 @@
+# Governance processes required by regulatory frameworks and their evidence.
+PREFIX :     <https://w3id.org/ai-finance-governance#>
+PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT DISTINCT ?framework ?frameworkLabel ?requirementType ?requirement ?requirementLabel ?page
+WHERE {
+  VALUES (?relation ?requirementClass ?requirementType) {
+    (:requiresDataGovernance       :DataGovernance       "data governance")
+    (:requiresHumanOversight       :HumanOversight       "human oversight")
+    (:requiresConformityAssessment :ConformityAssessment "conformity assessment")
+  }
+  ?framework rdf:type/rdfs:subClassOf* :RegulatoryFramework ;
+             rdfs:label ?frameworkLabel ;
+             ?relation ?requirement .
+  ?requirement rdf:type/rdfs:subClassOf* ?requirementClass ;
+               rdfs:label ?requirementLabel ;
+               :hasEvidence ?evidence .
+  ?evidence :pageReference ?page .
+}
+ORDER BY ?frameworkLabel ?requirementType

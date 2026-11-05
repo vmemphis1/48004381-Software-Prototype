@@ -1,0 +1,17 @@
+# Governance claims and the documents and passages supporting them.
+PREFIX :     <https://w3id.org/ai-finance-governance#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?claimLabel ?documentLabel ?page ?section ?confidence ?localPath
+WHERE {
+  ?claim :hasEvidence ?evidence .
+  ?evidence a :EvidenceSnippet ;
+            :extractedFrom   ?document ;
+            :confidenceLevel ?confidence .
+  ?claim    rdfs:label ?claimLabel .
+  ?document rdfs:label ?documentLabel .
+  OPTIONAL { ?evidence :pageReference    ?page }
+  OPTIONAL { ?evidence :sectionReference ?section }
+  OPTIONAL { ?document :localPath        ?localPath }
+}
+ORDER BY ?claimLabel

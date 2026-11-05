@@ -1,0 +1,17 @@
+# Definitions of AI concepts stated by firms and regulators.
+PREFIX :     <https://w3id.org/ai-finance-governance#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT DISTINCT ?sourceLabel ?sourceKind ?conceptLabel ?definitionText
+WHERE {
+  ?statement a :DefinitionStatement ;
+             :statedBy       ?source ;
+             :definesConcept ?concept ;
+             :definitionText ?definitionText .
+  ?source  rdfs:label ?sourceLabel .
+  ?concept rdfs:label ?conceptLabel .
+  OPTIONAL { ?source a :RegulatoryFramework  BIND("regulator" AS ?regulator) }
+  OPTIONAL { ?source a :FinancialInstitution BIND("firm"      AS ?firm) }
+  BIND(COALESCE(?regulator, ?firm, "other") AS ?sourceKind)
+}
+ORDER BY ?sourceKind ?sourceLabel

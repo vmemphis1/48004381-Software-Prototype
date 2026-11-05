@@ -1,0 +1,16 @@
+# Terms firms use for model risk.
+PREFIX :     <https://w3id.org/ai-finance-governance#>
+PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT DISTINCT ?actorLabel ?term ?conceptLabel
+WHERE {
+  ?usage a :TerminologyUsage ;
+         :usedByActor    ?actor ;
+         :usesTerminology ?term ;
+         :denotesConcept  ?concept .
+  ?concept rdf:type/rdfs:subClassOf* :ModelRisk .
+  ?actor   rdfs:label ?actorLabel .
+  ?concept rdfs:label ?conceptLabel .
+}
+ORDER BY ?actorLabel

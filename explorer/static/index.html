@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Finance Governance Explorer</title>
+<link rel="stylesheet" href="/static/css/app.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏛️</text></svg>">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <div>
+      <h1>AI Finance Governance</h1>
+      <p>Ontology explorer</p>
+    </div>
+  </div>
+
+  <nav class="tabs" id="tabs" aria-label="Views"></nav>
+
+  <div class="topbar-right">
+    <button id="reload" class="icon-btn" title="Re-read the Turtle sources from disk">
+      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 11A8 8 0 0 0 6.3 5.7L3 9"/><path d="M4 13a8 8 0 0 0 13.7 5.3L21 15"/><path d="M3 4v5h5M21 20v-5h-5"/></svg>
+    </button>
+    <span id="status-note" class="stale-note" hidden></span>
+  </div>
+</header>
+
+<main id="view" class="view" tabindex="-1"></main>
+
+<aside id="inspector" class="inspector" hidden aria-label="Resource inspector">
+  <div class="inspector-head">
+    <div id="inspector-title"></div>
+    <button id="inspector-close" class="icon-btn" aria-label="Close inspector">
+      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+  <div id="inspector-body" class="inspector-body"></div>
+</aside>
+
+<div id="viewer" class="viewer" hidden role="dialog" aria-modal="true" aria-label="Document preview">
+  <div class="viewer-head">
+    <div class="viewer-meta">
+      <strong id="viewer-title"></strong>
+      <span id="viewer-sub" class="muted"></span>
+    </div>
+    <div class="viewer-controls">
+      <div class="pager" id="viewer-pager" hidden>
+        <button id="page-prev" class="icon-btn" aria-label="Previous page">‹</button>
+        <label class="page-input"><input id="page-num" type="number" min="1" value="1" aria-label="Page number"><span id="page-total"></span></label>
+        <button id="page-next" class="icon-btn" aria-label="Next page">›</button>
+      </div>
+      <button id="viewer-zoom-out" class="icon-btn" aria-label="Zoom out" hidden>−</button>
+      <button id="viewer-zoom-in" class="icon-btn" aria-label="Zoom in" hidden>+</button>
+      <a id="viewer-source" class="ghost-btn" target="_blank" rel="noopener">Official source ↗</a>
+      <button id="viewer-close" class="icon-btn" aria-label="Close preview">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+  </div>
+  <div id="viewer-quote" class="viewer-quote" hidden></div>
+  <div id="viewer-stage" class="viewer-stage"></div>
+</div>
+
+<div id="toast" class="toast" hidden></div>
+
+<script type="module" src="/static/js/app.js"></script>
+</body>
+</html>

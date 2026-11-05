@@ -1,0 +1,14 @@
+# Firm statements relevant to organisational governance.
+PREFIX : <https://w3id.org/ai-finance-governance#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX dcterms: <http://purl.org/dc/terms/>
+SELECT DISTINCT ?actor ?topic ?statement ?status ?document ?date ?page
+WHERE {
+  ?actor a :FinancialInstitution .
+  ?actor :hasStatement ?statement .
+  ?statement :statementTopic ?topic ; :statementStatus ?status ; :hasEvidence ?evidence .
+  VALUES ?topic { "Approval" "Testing and monitoring" "Third-party governance" "Documentation" "Accountability" "Framework references" }
+  ?evidence :extractedFrom ?document ; :pageReference ?page .
+  ?document :documentDate ?date .
+}
+ORDER BY ?actor ?topic ?date ?statement

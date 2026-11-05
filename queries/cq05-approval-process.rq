@@ -1,0 +1,14 @@
+# Firms and their AI deployment approval processes.
+PREFIX :     <https://w3id.org/ai-finance-governance#>
+PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT DISTINCT ?firmLabel ?processLabel
+WHERE {
+  ?firm a :FinancialInstitution ;
+        rdfs:label ?firmLabel ;
+        :hasApprovalProcess ?process .
+  ?process rdf:type/rdfs:subClassOf* :AIDeploymentApproval ;
+           rdfs:label ?processLabel .
+}
+ORDER BY ?firmLabel

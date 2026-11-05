@@ -1,0 +1,14 @@
+# Financial institutions and counts their governance disclosures.
+PREFIX :     <https://w3id.org/ai-finance-governance#>
+PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?firm ?firmLabel (COUNT(DISTINCT ?disclosure) AS ?disclosures)
+WHERE {
+  ?firm a :FinancialInstitution ;
+        rdfs:label ?firmLabel ;
+        :hasGovernanceDisclosure ?disclosure .
+  ?disclosure rdf:type/rdfs:subClassOf* :FirmAIGovernanceDisclosure .
+}
+GROUP BY ?firm ?firmLabel
+ORDER BY ?firmLabel

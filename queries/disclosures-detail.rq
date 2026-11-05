@@ -1,0 +1,18 @@
+# Documents recorded as governance disclosures for each firm.
+PREFIX :     <https://w3id.org/ai-finance-governance#>
+PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT DISTINCT ?firmLabel ?disclosure ?disclosureLabel ?documentType ?documentDate ?documentURL ?localPath
+WHERE {
+  ?firm a :FinancialInstitution ;
+        rdfs:label ?firmLabel ;
+        :hasGovernanceDisclosure ?disclosure .
+  ?disclosure rdf:type/rdfs:subClassOf* :FirmAIGovernanceDisclosure ;
+              rdfs:label ?disclosureLabel .
+  OPTIONAL { ?disclosure :documentType ?documentType }
+  OPTIONAL { ?disclosure :documentDate ?documentDate }
+  OPTIONAL { ?disclosure :documentURL  ?documentURL }
+  OPTIONAL { ?disclosure :localPath    ?localPath }
+}
+ORDER BY ?firmLabel ?disclosureLabel

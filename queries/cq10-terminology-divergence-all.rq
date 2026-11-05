@@ -1,0 +1,24 @@
+# Terms different firms use for governance concepts.
+PREFIX :     <https://w3id.org/ai-finance-governance#>
+PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX owl:  <http://www.w3.org/2002/07/owl#>
+
+SELECT ?conceptTypeLabel ?actorLabel ?jurisdiction ?term
+WHERE {
+  ?usage a :TerminologyUsage ;
+         :usedByActor     ?actor ;
+         :usesTerminology ?term ;
+         :denotesConcept  ?concept .
+  ?concept a ?conceptType .
+  ?conceptType a owl:Class ;
+               rdfs:label ?conceptTypeLabel .
+  FILTER NOT EXISTS {
+    ?concept a ?narrowerType .
+    ?narrowerType rdfs:subClassOf ?conceptType .
+    FILTER(?narrowerType != ?conceptType)
+  }
+  ?actor rdfs:label ?actorLabel .
+  OPTIONAL { ?actor :jurisdiction ?jurisdiction }
+}
+ORDER BY ?conceptTypeLabel ?jurisdiction ?actorLabel

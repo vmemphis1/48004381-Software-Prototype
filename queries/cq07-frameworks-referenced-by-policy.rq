@@ -1,0 +1,17 @@
+# Regulatory frameworks explicitly referenced by firm AI policies; no results are currently expected.
+PREFIX :     <https://w3id.org/ai-finance-governance#>
+PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT DISTINCT ?firmLabel ?policyLabel ?framework ?frameworkLabel
+WHERE {
+  ?firm a :FinancialInstitution ;
+        rdfs:label ?firmLabel ;
+        :hasGovernancePolicy ?policy .
+  ?policy rdf:type/rdfs:subClassOf* :AIGovernancePolicy ;
+          rdfs:label ?policyLabel ;
+          :referencesFramework ?framework .
+  ?framework a :RegulatoryFramework ;
+             rdfs:label ?frameworkLabel .
+}
+ORDER BY ?firmLabel ?frameworkLabel

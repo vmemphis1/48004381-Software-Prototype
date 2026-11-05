@@ -1,0 +1,26 @@
+# Practices, risks, and other records supported by firm disclosures.
+PREFIX :     <https://w3id.org/ai-finance-governance#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT DISTINCT ?disclosureLabel ?relation ?derivedLabel ?page ?confidence
+WHERE {
+  ?firm :hasGovernanceDisclosure ?disclosure .
+  ?disclosure rdfs:label ?disclosureLabel .
+
+  {
+    ?disclosure ?relation ?derived .
+    FILTER(?relation IN (:disclosesPractice, :disclosesRisk))
+  } UNION {
+    ?derived :observedInDocument ?disclosure .
+    BIND(:observedInDocument AS ?relation)
+  }
+
+  ?derived rdfs:label ?derivedLabel .
+  OPTIONAL {
+    ?derived :hasEvidence ?evidence .
+    ?evidence :extractedFrom   ?disclosure ;
+              :pageReference   ?page ;
+              :confidenceLevel ?confidence .
+  }
+}
+ORDER BY ?disclosureLabel ?derivedLabel

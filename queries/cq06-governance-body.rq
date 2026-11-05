@@ -1,0 +1,14 @@
+# AI governance bodies associated with financial institutions.
+PREFIX :     <https://w3id.org/ai-finance-governance#>
+PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT DISTINCT ?firmLabel ?bodyLabel
+WHERE {
+  ?firm a :FinancialInstitution ;
+        rdfs:label ?firmLabel ;
+        :hasGovernanceBody ?body .
+  ?body rdf:type/rdfs:subClassOf* :AIGovernanceBody ;
+        rdfs:label ?bodyLabel .
+}
+ORDER BY ?firmLabel

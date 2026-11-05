@@ -1,0 +1,14 @@
+# Regulatory governance statements and their supporting sources.
+PREFIX : <https://w3id.org/ai-finance-governance#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX dcterms: <http://purl.org/dc/terms/>
+SELECT DISTINCT ?actor ?topic ?statement ?status ?document ?date ?page
+WHERE {
+  ?actor a :RegulatoryFramework .
+  ?actor :hasStatement ?statement .
+  ?statement :statementTopic ?topic ; :statementStatus ?status ; :hasEvidence ?evidence .
+  VALUES ?topic { "Jurisdiction" "Documentation" "Third-party governance" "Accountability" "Risk terminology" }
+  ?evidence :extractedFrom ?document ; :pageReference ?page .
+  ?document :documentDate ?date .
+}
+ORDER BY ?actor ?topic ?date ?statement

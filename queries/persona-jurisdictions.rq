@@ -1,0 +1,18 @@
+# Regulatory frameworks, jurisdictions, and associated source documents.
+PREFIX : <https://w3id.org/ai-finance-governance#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX dcterms: <http://purl.org/dc/terms/>
+SELECT DISTINCT ?framework ?jurisdiction ?document ?date ?collectionStatus
+WHERE {
+ ?framework a :RegulatoryFramework ; :jurisdiction ?jurisdiction .
+ OPTIONAL {
+   { ?framework dcterms:source ?document . ?document :localPath ?path }
+   UNION
+   { ?framework :hasStatement/:hasEvidence/:extractedFrom ?document . ?document :localPath ?path }
+   UNION
+   { ?framework :hasGovernanceRequirement/:hasEvidence/:extractedFrom ?document . ?document :localPath ?path }
+   OPTIONAL { ?document :documentDate ?date }
+ }
+ BIND(IF(BOUND(?document), "Archived source; inspect scope and status", "Source not linked or not collected") AS ?collectionStatus)
+}
+ORDER BY ?jurisdiction ?framework ?date

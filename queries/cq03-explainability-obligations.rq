@@ -1,0 +1,15 @@
+# Explainability obligations in regulatory frameworks.
+PREFIX :     <https://w3id.org/ai-finance-governance#>
+PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT DISTINCT ?framework ?frameworkLabel ?jurisdiction ?obligationLabel
+WHERE {
+  ?framework a :RegulatoryFramework ;
+             rdfs:label ?frameworkLabel ;
+             :hasGovernanceRequirement ?obligation .
+  ?obligation rdf:type/rdfs:subClassOf* :ExplainabilityObligation ;
+              rdfs:label ?obligationLabel .
+  OPTIONAL { ?framework :jurisdiction ?jurisdiction }
+}
+ORDER BY ?frameworkLabel

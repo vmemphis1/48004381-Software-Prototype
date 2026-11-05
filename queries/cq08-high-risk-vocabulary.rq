@@ -1,0 +1,19 @@
+# Regulatory AI risk classifications and firm model tiering statements.
+PREFIX : <https://w3id.org/ai-finance-governance#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+SELECT DISTINCT ?actorLabel ?actorKind ?tierLabel ?evidence
+WHERE {
+ {
+  ?actor a :RegulatoryFramework ; :classifiesSystemAs ?tier .
+  ?tier rdf:type/rdfs:subClassOf* :RiskTier ; rdfs:label ?tierLabel .
+  OPTIONAL { ?tier :hasEvidence ?evidence }
+  BIND("Regulatory classification" AS ?actorKind)
+ } UNION {
+  ?actor a :FinancialInstitution ; :hasStatement ?statement .
+  ?statement :statementTopic "Risk tiering" ; :statementText ?tierLabel ; :hasEvidence ?evidence .
+  BIND("Firm model tiering; no legal equivalence asserted" AS ?actorKind)
+ }
+ ?actor rdfs:label ?actorLabel .
+}
+ORDER BY ?actorKind ?actorLabel

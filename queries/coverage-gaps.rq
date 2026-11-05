@@ -1,0 +1,17 @@
+# Firms with or without recorded policies, governance bodies, and approval processes.
+PREFIX :     <https://w3id.org/ai-finance-governance#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?firmLabel
+       (IF(COUNT(DISTINCT ?pol)  > 0, "yes", "not verified") AS ?formalPolicy)
+       (IF(COUNT(DISTINCT ?body) > 0, "yes", "not verified") AS ?governanceBody)
+       (IF(COUNT(DISTINCT ?appr) > 0, "yes", "not verified") AS ?approvalProcess)
+WHERE {
+  ?firm a :FinancialInstitution ;
+        rdfs:label ?firmLabel .
+  OPTIONAL { ?firm :hasGovernancePolicy ?pol }
+  OPTIONAL { ?firm :hasGovernanceBody   ?body }
+  OPTIONAL { ?firm :hasApprovalProcess  ?appr }
+}
+GROUP BY ?firm ?firmLabel
+ORDER BY ?firmLabel

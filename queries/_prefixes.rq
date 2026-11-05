@@ -1,0 +1,10 @@
+# This file provides shared prefixes for the query pack.
+PREFIX :        <https://w3id.org/ai-finance-governance#>
+PREFIX afg:     <https://w3id.org/ai-finance-governance#>
+PREFIX airo:    <https://w3id.org/airo#>
+PREFIX fibo-fbc-fct-fse: <https://spec.edmcouncil.org/fibo/ontology/FBC/FunctionalEntities/FinancialServicesEntities/>
+PREFIX owl:     <http://www.w3.org/2002/07/owl#>
+PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX skos:    <http://www.w3.org/2004/02/skos/core#>
+PREFIX dcterms: <http://purl.org/dc/terms/>
