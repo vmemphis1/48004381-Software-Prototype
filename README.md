@@ -1,6 +1,4 @@
 # Explorer
-Every query runs in process through rdflib. No external database is required.
-
 ## Dependencies and setup
 
 The prototype needs Python 3 and a modern web browser. Its Python dependencies
