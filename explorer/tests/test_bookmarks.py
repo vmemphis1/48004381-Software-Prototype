@@ -41,6 +41,7 @@ assert.equal(saved.created, true);
 assert.ok(saved.bookmark.id.startsWith('bookmark-'));
 assert.equal(saved.bookmark.kind, 'bookmark');
 assert.ok(Number.isFinite(Date.parse(saved.bookmark.createdAt)));
+// The query string forces a fresh module instance while retaining shared storage.
 const reloaded = await import(moduleUrl.href + '?reload');
 assert.deepEqual(reloaded.listBookmarks(), [saved.bookmark]);
 assert.equal(reloaded.getBookmark(saved.bookmark.id).sparql, query.sparql);
@@ -109,6 +110,7 @@ const [key] = storage.keys();
 const original = bookmarks.listBookmarks()[0];
 const earlier = {...original, id: 'bookmark-earlier', createdAt: '2020-01-01T00:00:00.000Z'};
 const later = {...original, id: 'bookmark-later', sparql: 'ASK {}', createdAt: '2025-01-01T00:00:00.000Z'};
+// Replace storage directly to simulate a write from another browser tab.
 localStorage.setItem(key, JSON.stringify({version: 1, bookmarks: [earlier, later]}));
 assert.deepEqual(bookmarks.listBookmarks().map(value => value.id), ['bookmark-later', 'bookmark-earlier']);
 assert.equal(bookmarks.getBookmark(original.id), null);

@@ -7,6 +7,7 @@ const term = (iri) => iri.startsWith(AFG) ? `:${iri.slice(AFG.length)}` : `<${ir
 export function compile(plan) {
   const nodes = [{ var: 'record', iri: plan.rootClass }];
   const values = [];
+  // Include instances of subclasses without requiring materialized inferred types.
   const lines = [`  ?record rdf:type/rdfs:subClassOf* ${term(plan.rootClass)} .`];
   for (const step of plan.steps) {
     const variable = `${step.kind === 'relation' ? 'linked' : 'field'}${step.id}`;
@@ -17,11 +18,13 @@ export function compile(plan) {
       nodes.push({ var: variable, iri: step.range, label: step.propertyLabel });
     } else {
       if (step.op === 'absent') {
+        // An absent field filters records but has no value to project as a column.
         lines.push(`  FILTER NOT EXISTS { ${triple} }`);
         continue;
       }
       lines.push(step.op === 'show' ? `  OPTIONAL { ${triple} }` : `  ${triple}`);
       if (step.op === 'is') {
+        // JSON string escaping also produces a valid SPARQL string literal.
         lines.push(`  FILTER(STR(?${variable}) = ${JSON.stringify(step.value)})`);
       }
       values.push({ var: variable, label: step.propertyLabel });

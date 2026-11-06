@@ -19,6 +19,7 @@ done
 python3 -c 'import rdflib' 2>/dev/null ||
   python3 -m pip install -q -r scripts/requirements.txt
 
+# Return the PID of the first process listening on the configured port, if any.
 port_holder() { lsof -ti "tcp:${PORT}" -sTCP:LISTEN 2>/dev/null | head -1 || true; }
 
 holder="$(port_holder)"

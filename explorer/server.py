@@ -116,6 +116,7 @@ class Handler(BaseHTTPRequestHandler):
         if self.headers.get_content_type() != 'application/json':
             raise ValueError('Corpus additions require JSON data.')
         origin = self.headers.get('Origin')
+        # A browser write with an Origin must come from the host serving the explorer.
         if origin and urllib.parse.urlparse(origin).netloc != self.headers.get('Host'):
             raise ValueError('Corpus additions must come from this explorer.')
         length = int(self.headers.get('Content-Length') or 0)
@@ -188,6 +189,7 @@ class Handler(BaseHTTPRequestHandler):
                     start = int(raw_start)
                     end = int(raw_end) if raw_end else size - 1
                 elif raw_end:
+                    # A suffix range such as bytes=-500 requests the final 500 bytes.
                     start = max(0, size - int(raw_end))
                 if start >= size:
                     self.send_response(HTTPStatus.REQUESTED_RANGE_NOT_SATISFIABLE)
@@ -202,7 +204,7 @@ class Handler(BaseHTTPRequestHandler):
         self.send_response(HTTPStatus.PARTIAL_CONTENT if partial else HTTPStatus.OK)
         self.send_header("Content-Type", content_type)
         if target.suffix.lower() in ('.html', '.htm'):
-
+            # Archived pages may contain active content; allow viewing but not scripts.
             self.send_header('Content-Security-Policy', "sandbox allow-same-origin; script-src 'none'; object-src 'none'; base-uri 'none'")
         self.send_header('X-Content-Type-Options', 'nosniff')
         self.send_header("Accept-Ranges", "bytes")

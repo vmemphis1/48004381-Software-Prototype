@@ -1,11 +1,4 @@
 """Read the competency questions, the query pack, and the evaluation table.
-
-Nothing here is hard-coded. The ten questions come from ORSD section 8, the
-queries from `queries/*.rq`, and the status of each from
-`ontology/competency-question-evaluation.md` -- the same three files
-`scripts/audit_ontology.py` cross-checks. Editing any of them changes the
-interface on the next request, which is the point: the explorer cannot drift
-away from the documents the thesis is written against.
 """
 
 from __future__ import annotations

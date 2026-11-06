@@ -117,7 +117,7 @@ function card(question, results) {
 function toggleQuestion(question, container) {
   if (state.activeQuestionId !== question.id) return run(question, container, true);
 
-
+  // Invalidate any pending response so closing a card cannot reopen its results.
   ++requestRevision;
   setState({ activeQuestionId: null });
   document.querySelectorAll('.qcard').forEach((node) => {

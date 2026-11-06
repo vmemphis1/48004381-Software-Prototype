@@ -1,8 +1,4 @@
 """Derived read models: resources, evidence, graph, documents.
-
-Each function turns the parsed graph into the shape one screen needs. They all
-take the live `GraphService`, so an edit to the Turtle is reflected the next time
-a screen is opened -- there is no separate cache to invalidate.
 """
 
 from __future__ import annotations
@@ -427,6 +423,7 @@ def builder_options(service: GraphService, sparql: str) -> dict[str, Any]:
     roots = {row[0]["value"] for row in result.rows if row and row[0]}
     nodes = {}
     for column, variable in enumerate(result.columns):
+        # Keep the roots associated with each binding so fan-out does not inflate counts.
         subjects: dict[str, set[str]] = {}
         for row in result.rows:
             cell = row[column]
@@ -447,6 +444,7 @@ def builder_options(service: GraphService, sparql: str) -> dict[str, Any]:
                         types = set()
                         for direct in graph.objects(target, RDF.type):
                             types.update(graph.transitive_objects(direct, RDFS.subClassOf))
+                        # None offers the relationship without restricting the target class.
                         ranges = [None] + sorted(str(t) for t in types if str(t) in service.classes)
                         for range_iri in ranges:
                             key = (prop_iri, range_iri)

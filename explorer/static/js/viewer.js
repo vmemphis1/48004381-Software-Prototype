@@ -70,6 +70,7 @@ export async function openDocument(document_, { page, quote, caption } = {}) {
 
 /** Load an archived PDF into the viewer. */
 async function openPdf(document_) {
+  // Discard a slower PDF load if another render was started in the meantime.
   const token = ++renderToken;
   try {
     const lib = await ensurePdfjs();
@@ -185,6 +186,8 @@ function highlight(container, quote) {
   let compact = '';
   const compactOwner = [];
   let lastWasSpace = true;
+  // Keep a character-to-span map so a match across PDF text spans can be highlighted.
+  // The compact form also handles PDFs whose text layer inserts extra whitespace.
   spans.forEach((span, index) => {
     for (const character of `${normalise(span.textContent)} `) {
       if (/\s/.test(character)) {
@@ -213,6 +216,7 @@ function highlight(container, quote) {
   const runs = quoteRuns(target);
 
   if (runs.length > 1) {
+    // Ellipses denote separate excerpts, so highlight each run that can be found.
     const marked = runs.map(locate).filter(Boolean);
     if (!marked.length) return false;
     marked.forEach((hit) => hit.forEach((index) => spans[index].classList.add('hit')));
@@ -223,6 +227,7 @@ function highlight(container, quote) {
 
   const attempts = [target];
   const words = target.split(' ');
+  // If the entire quote is not contiguous, try progressively shorter leading phrases.
   for (const count of [14, 10, 7, 5]) {
     if (words.length > count) attempts.push(words.slice(0, count).join(' '));
   }

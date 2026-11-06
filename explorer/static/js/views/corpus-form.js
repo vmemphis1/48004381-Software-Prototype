@@ -52,11 +52,11 @@ export function corpusForm(options, { document, onCancel, onSaved }) {
   const objectProperties = options.properties.filter((p) => p.kind === 'object');
   const dataProperties = options.properties.filter((p) => p.kind === 'data');
 
-  /** Check whether a relationship can connect the selected types. */
+  /** Check types against all declared RDFS domains and ranges, which are cumulative. */
   const compatible = (property, from, to) => property.domain.every((d) => isA(from, d))
     && property.range.every((r) => isA(to, r));
 
-  /** Build available relationship choices for the selected records. */
+  /** Build relationship choices in both directions between the selected records. */
   const linkChoices = (from, to) => objectProperties.flatMap((p) => [
     ...(compatible(p, from, to) ? [[`out|${p.iri}`, `New record → ${p.label} → linked record`]] : []),
     ...(compatible(p, to, from) ? [[`in|${p.iri}`, `Linked record → ${p.label} → new record`]] : []),

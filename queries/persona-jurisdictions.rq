@@ -6,6 +6,7 @@ SELECT DISTINCT ?framework ?jurisdiction ?document ?date ?collectionStatus
 WHERE {
  ?framework a :RegulatoryFramework ; :jurisdiction ?jurisdiction .
  OPTIONAL {
+   # Sources may be linked directly, through statements, or through requirements.
    { ?framework dcterms:source ?document . ?document :localPath ?path }
    UNION
    { ?framework :hasStatement/:hasEvidence/:extractedFrom ?document . ?document :localPath ?path }

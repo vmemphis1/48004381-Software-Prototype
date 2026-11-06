@@ -14,6 +14,7 @@ function snapshotPlan(plan) {
     || !(plan.hidden instanceof Set || Array.isArray(plan.hidden))) return null;
   const hidden = [...plan.hidden];
   if (!hidden.every((column) => typeof column === 'string')) return null;
+  // Sets do not survive JSON serialization; restore() recreates the Set on read.
   return { version: 2, rootClass: plan.rootClass, steps: clone(plan.steps),
     hidden, nextId: plan.nextId };
 }
@@ -41,7 +42,7 @@ function read() {
         sparql: value.sparql, mode: value.mode, createdAt: value.createdAt };
       if (value.plan !== undefined) {
         const plan = snapshotPlan(value.plan);
-
+        // An invalid builder snapshot must not discard the saved runnable SPARQL.
         if (plan) bookmark.plan = plan;
       }
       if (isObject(value.columnLabels)) bookmark.columnLabels = clone(value.columnLabels);

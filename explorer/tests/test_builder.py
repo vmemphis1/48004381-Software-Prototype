@@ -88,6 +88,7 @@ class BuilderTests(unittest.TestCase):
             with self.subTest(query=compiled['sparql']):
                 result = self.service.run_local(compiled['sparql'])
                 self.assertTrue(result.ok, result.error)
+                # A root may produce several rows, but choices count distinct roots.
                 roots = {row[0]['value'] for row in result.rows}
                 self.assertEqual(len(roots), count)
                 self.assertGreater(len(roots), 0)

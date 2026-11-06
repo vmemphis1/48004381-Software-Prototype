@@ -13,6 +13,8 @@ WHERE {
   ?concept a ?conceptType .
   ?conceptType a owl:Class ;
                rdfs:label ?conceptTypeLabel .
+  # Suppress a directly asserted broader type when the same concept also has
+  # an explicitly asserted, immediately narrower type.
   FILTER NOT EXISTS {
     ?concept a ?narrowerType .
     ?narrowerType rdfs:subClassOf ?conceptType .

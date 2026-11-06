@@ -1,12 +1,4 @@
 """Graph loading, auto-reload, and in-process SPARQL execution.
-
-The explorer must never show a stale answer. `ontology/ai-finance-governance.ttl`
-is edited by hand in VS Code, so the service stamps the mtime of every source file
-at load time and re-parses whenever one of them changes. That makes the browser a
-live view of the working tree rather than a snapshot taken at startup.
-
-Queries run through rdflib in process. The query pack carries any subclass traversal it
-needs explicitly, so the explorer has no external database, copied graph, or reload step.
 """
 
 from __future__ import annotations
@@ -132,8 +124,7 @@ class GraphService:
                     graph.parse(source, format="turtle")
             self.graph = graph
 
-
-
+            # Keep a separate project-only graph for figures that exclude imported AIRO.
             project = Graph()
             if self.ontology.exists():
                 project.parse(self.ontology, format="turtle")
@@ -183,6 +174,8 @@ class GraphService:
                 classes[iri]["directInstances"] += 1
 
 
+        # Traverse each descendant class once, even if inheritance has multiple paths.
+        # Counts sum type assertions; an individual asserted in two classes can count twice.
         for iri, record in classes.items():
             seen: set[str] = set()
             stack = [iri]

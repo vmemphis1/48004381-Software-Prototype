@@ -3,6 +3,7 @@ PREFIX :     <https://w3id.org/ai-finance-governance#>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 
 SELECT ?firmLabel
+       # Absence from the graph is an evidence gap, not proof a practice is absent.
        (IF(COUNT(DISTINCT ?pol)  > 0, "yes", "not verified") AS ?formalPolicy)
        (IF(COUNT(DISTINCT ?body) > 0, "yes", "not verified") AS ?governanceBody)
        (IF(COUNT(DISTINCT ?appr) > 0, "yes", "not verified") AS ?approvalProcess)

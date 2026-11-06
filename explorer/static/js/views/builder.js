@@ -86,6 +86,7 @@ export async function render(container, params = {}) {
 
   /** Switch between the guided builder and manual editor. */
   const showMode = async (mode) => {
+    // A newer mode switch or redraw invalidates outstanding requests.
     const current = ++revision;
     setState({ builderMode: mode });
     modes.querySelectorAll('button').forEach((button) => {
@@ -243,8 +244,7 @@ async function draw(left, right, results) {
   clear(right).append(el('div', { class: 'builder-panel' }, loading('Checking matching records…')));
   let contexts;
   try {
-
-
+    // Each step must use choices from matches before that step, not the final query.
     contexts = await Promise.all(Array.from({ length: plan.steps.length + 1 }, (_, i) =>
       api.builderOptions(compile(prefix(plan, i)).sparql)));
   } catch (error) {
@@ -259,6 +259,7 @@ async function draw(left, right, results) {
   left.removeAttribute('aria-busy');
   if (plan.revalidate) {
     delete plan.revalidate;
+    // Keep dependent steps until the first one that no longer matches the data.
     const invalid = plan.steps.findIndex((step, index) => !stepAvailable(step, contexts[index]));
     if (invalid !== -1) {
       plan.steps.splice(invalid);

@@ -4,6 +4,8 @@ PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 SELECT DISTINCT ?actorLabel ?actorKind ?tierLabel ?evidence
 WHERE {
+ # The two branches compare recorded vocabulary without equating a firm's
+ # internal model tiers with a regulator's classification.
  {
   ?actor a :RegulatoryFramework ; :classifiesSystemAs ?tier .
   ?tier rdf:type/rdfs:subClassOf* :RiskTier ; rdfs:label ?tierLabel .

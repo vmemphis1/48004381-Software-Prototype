@@ -188,6 +188,7 @@ def main() -> int:
             results.append(("FAIL", name, f"archived file missing: {local}"))
             continue
 
+        # Several snippets often cite one report; extract each archived file once.
         if path not in text_cache:
             text_cache[path] = pdf_pages(path) if path.suffix.lower() == ".pdf" else html_text(path)
         content = text_cache[path]
@@ -223,6 +224,8 @@ def main() -> int:
 
 
 
+        # Prefer nearby matches to help correct common PDF/report page offsets;
+        # only search the full document if none is close to the cited page.
         nearby = [i + 1 for i in range(max(0, wanted - 1 - NEARBY),
                                        min(len(content), wanted + NEARBY))
                   if contains(content[i], quote)]
@@ -251,6 +254,7 @@ def main() -> int:
         print(f"{len(unreadable)} could not be checked here because pypdf cannot decode "
               "the page; these still render and highlight in the explorer, which uses "
               "pdf.js.")
+    # Unreadable is distinct from a missing quotation, but neither verifies it.
     if failures or unreadable:
         print(f"{len(failures)} need attention.")
         return 1

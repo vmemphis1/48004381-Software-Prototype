@@ -69,6 +69,8 @@ def unpopulated_local_classes(graph: Graph) -> set[URIRef]:
         for value in graph.subjects(RDF.type, OWL.Class)
         if isinstance(value, URIRef) and str(value).startswith(str(AFG))
     }
+    # rdflib does not materialize inherited types, so inspect local subclasses
+    # explicitly before deciding that a parent class has no instances.
     children: dict[URIRef, set[URIRef]] = {value: set() for value in classes}
     for child in classes:
         for parent in graph.objects(child, RDFS.subClassOf):
@@ -246,6 +248,7 @@ def main() -> int:
         errors,
     )
 
+    # These classes describe regulated systems, not deployed systems in the corpus.
     empty_classes = unpopulated_local_classes(graph)
     expected_empty_classes = {AFG.AISystem, AFG.HighRiskAISystem}
     require(
@@ -272,6 +275,8 @@ def main() -> int:
             errors,
         )
 
+    # Include disclosures explicitly because their SourceDocument type is inherited
+    # and this graph is parsed without a reasoner.
     source_documents = set(graph.subjects(RDF.type, AFG.SourceDocument)) | set(
         graph.subjects(RDF.type, AFG.FirmAIGovernanceDisclosure)
     )

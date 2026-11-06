@@ -132,6 +132,7 @@ def _link(service, additions, record, record_types, spec, owner, owner_types):
     direction = spec.get('direction', 'out')
     if direction not in ('out', 'in'):
         raise ValueError('A graph link must have an incoming or outgoing direction.')
+    # Check domain and range after orienting the link, including incoming links.
     subject, obj = (record, target) if direction == 'out' else (target, record)
     subject_types, object_types = (record_types, target_types) if direction == 'out' else (target_types, record_types)
     for required in prop['domain']:
@@ -170,6 +171,7 @@ def _target(service, additions, spec, owner, owner_types, document, quote):
             if value:
                 datatype = URIRef(prop['range'][0]) if prop['range'] else None
 
+                # Plain RDF literals already represent strings; retain other declared datatypes.
                 if datatype == XSD.string:
                     datatype = None
                 if datatype == XSD.anyURI:
@@ -188,6 +190,7 @@ def _target(service, additions, spec, owner, owner_types, document, quote):
                     raise ValueError('New governance statements require a topic and source status.')
             if not additions.value(node, A('statementText')):
                 additions.add((node, A('statementText'), Literal(label)))
+        # Populate fields that source-specific queries rely on when no value was supplied.
         if _is_a(service.graph, types, A('DefinitionStatement')) and not additions.value(node, A('definitionText')):
             additions.add((node, A('definitionText'), Literal(quote)))
         if _is_a(service.graph, types, A('TerminologyUsage')):
@@ -245,6 +248,7 @@ def _append(service, additions):
     for prefix, namespace in PREFIXES.items():
         additions.bind(prefix or 'afg', namespace)
     text = original + '\n\n# Added through the Explorer Corpus page.\n' + additions.serialize(format='turtle')
+    # Parse the combined content before replacing the working ontology.
     Graph().parse(data=text, format='turtle')
     temporary = None
     try:
@@ -254,6 +258,7 @@ def _append(service, additions):
             handle.write(text)
             handle.flush()
             os.fsync(handle.fileno())
+        # Detect edits made while the replacement was being prepared.
         if (path.stat().st_mtime_ns, path.stat().st_size) != stamp:
             raise ValueError('The ontology changed while saving. Your form is kept; please try again.')
         temporary.chmod(path.stat().st_mode & 0o777)
@@ -320,6 +325,7 @@ def save_document(service: GraphService, payload: dict):
                 additions.add((document, A(field), Literal(value, datatype=XSD.anyURI if field == 'documentURL' else None)))
         snippets = _snippets(service, payload, additions, owner, owner_types, document)
         archive.parent.mkdir(parents=True, exist_ok=True)
+        # Write the file first, then remove it if the ontology update fails.
         with archive.open('xb') as handle:
             handle.write(data)
         try:

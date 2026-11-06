@@ -59,6 +59,7 @@ class CorpusTests(unittest.TestCase):
     def request(self, method, path, payload=None, origin=None, content_type='application/json'):
         """Send a test request to the explorer API."""
         body = json.dumps(payload).encode() if payload is not None else b''
+        # Invoke the real handler without opening a listening socket.
         handler = object.__new__(server.Handler)
         handler.command, handler.path = method, path
         handler.request_version = 'HTTP/1.1'
@@ -193,6 +194,7 @@ class CorpusTests(unittest.TestCase):
     def test_concurrent_external_edit_is_preserved(self):
         """Check that concurrent external edit is preserved."""
         create_temp = tempfile.NamedTemporaryFile
+        # The temporary-file hook places the edit between the read and commit.
         def edit_before_commit(*args, **kwargs):
             """Simulate an external edit before the corpus commit."""
             self.service.ontology.write_text(self.original + '\n# Concurrent external edit\n')
