@@ -1,4 +1,4 @@
-import { el, clear, highlightSparql, copy, loading, toast, confidenceLabel, truncate } from '../dom.js';
+import { el, clear, highlightSparql, copy, loading, toast, truncate } from '../dom.js';
 import { api } from '../api.js';
 import { state, setState } from '../state.js';
 import { findBookmark, getBookmark, saveBookmark } from '../bookmarks.js';
@@ -257,17 +257,18 @@ async function draw(left, right, results) {
   }
   if (current !== revision || !left.isConnected) return;
   left.removeAttribute('aria-busy');
-  if (plan.revalidate) {
-    delete plan.revalidate;
-    // Keep dependent steps until the first one that no longer matches the data.
-    const invalid = plan.steps.findIndex((step, index) => !stepAvailable(step, contexts[index]));
-    if (invalid !== -1) {
-      plan.steps.splice(invalid);
-      toast(`Step ${invalid + 2} no longer matches. That step and later steps were cleared.`);
-      return redraw();
-    }
+  // Revalidate restored plans and previously open plans against the current graph.
+  const invalid = plan.steps.findIndex((step, index) => !stepAvailable(step, contexts[index]));
+  if (invalid !== -1) {
+    plan.steps.splice(invalid);
+    toast(`Step ${invalid + 2} no longer matches. That step and later steps were cleared.`);
+    return redraw();
   }
-  const built = compile(plan);
+  let built = compile(plan);
+  if ([...built.nodes, ...built.values].every(column => plan.hidden.has(column.var))) {
+    plan.hidden.delete('record');
+    built = compile(plan);
+  }
   const final = contexts.at(-1);
 
   /** Update a builder step and refresh its dependent choices. */
@@ -276,8 +277,6 @@ async function draw(left, right, results) {
     if (remove) {
       const removed = plan.steps.splice(index);
       if (removed.length > 1) toast('Later steps were also removed because they use the earlier choices.');
-    } else {
-      plan.revalidate = true;
     }
     const available = compile(plan);
     const validColumns = new Set([...available.nodes, ...available.values].map((n) => n.var));
@@ -347,7 +346,7 @@ async function draw(left, right, results) {
           step.value = chosen.values[0]?.value || '';
         }))));
       if (step.op === 'is') row.append(field('Recorded value', select(`Value for step ${index + 2}`,
-        chosen.values.map((v) => [v.value, confidenceLabel(v.value)]), step.value,
+        chosen.values.map((v) => [v.value, v.value]), step.value,
         (value) => change(index, () => { step.value = value; }))));
       if (step.op === 'show') row.append(el('p', { class: 'builder-help' }, 'Missing details appear as blank cells; records stay in the results.'));
       if (step.op === 'absent') row.append(el('p', { class: 'builder-help' }, 'A missing value means it is not recorded in the collected documents.'));
@@ -482,7 +481,7 @@ function describe(plan) {
       names[`linked${step.id}`] = step.range ? label(step.range) : `Records linked by “${step.propertyLabel}”`;
     } else {
       const condition = { present: 'must have a recorded value', absent: 'must have no recorded value',
-        show: 'show the value when available', is: `must match “${confidenceLabel(step.value)}”` }[step.op];
+        show: 'show the value when available', is: `must match “${step.value}”` }[step.op];
       sentences.push(`${subject} → ${step.propertyLabel}: ${condition}.`);
     }
   }

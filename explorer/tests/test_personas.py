@@ -2,10 +2,10 @@
 from pathlib import Path
 import sys
 import unittest
-from rdflib import Graph, Namespace, RDF
+from rdflib import Graph, Namespace, RDF, RDFS
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'scripts'))
-from verify_evidence_text import contains, normalise
+from verify_evidence_text import ArchiveText, contains, normalise
 A = Namespace('https://w3id.org/ai-finance-governance#')
 
 class EvidenceMatchingTests(unittest.TestCase):
@@ -19,6 +19,16 @@ class EvidenceMatchingTests(unittest.TestCase):
     def test_empty_is_not_evidence(self):
         """Check that empty is not evidence."""
         self.assertFalse(contains('some source', ''))
+        self.assertFalse(contains('some source', '... …'))
+    def test_html_verifier_excludes_hidden_evidence(self):
+        parser = ArchiveText()
+        parser.feed('<head><title>Unseen</title></head><body><div hidden><b>Secret</b></div>'
+                    '<p>Visible <em>quote</em>.</p><script>invented tail</script></body>')
+        text = normalise(' '.join(parser.parts))
+        self.assertTrue(contains(text, 'visible quote.'))
+        for hidden in ('secret', 'unseen', 'invented tail'):
+            self.assertFalse(contains(text, hidden))
+
     def test_layout_normalisation_is_retained(self):
         """Check that layout normalisation is retained."""
         self.assertTrue(contains(normalise('pre-\ndeployment  testing'), normalise('predeployment testing')))
@@ -40,7 +50,9 @@ class PersonaEvidenceTests(unittest.TestCase):
         """Check that submission and report do not become policy references."""
         self.assertNotIn((A.ANZGuardrailsSubmission2024,RDF.type,A.AIGovernancePolicy),self.g)
         self.assertFalse(list(self.g.objects(A.NAB2025AnnualReport,A.referencesFramework)))
-        self.assertFalse(list(self.g.query((ROOT/'queries/cq07-frameworks-referenced-by-policy.rq').read_text())))
+        rows = self.g.query((ROOT/'queries/cq07-frameworks-referenced-by-policy.rq').read_text())
+        self.assertFalse(any(row.policyLabel in {self.g.value(node, RDFS.label) for node in
+                             (A.ANZGuardrailsSubmission2024, A.NAB2025AnnualReport)} for row in rows))
     def test_important_qualifiers_survive(self):
         """Check that important qualifiers survive."""
         quote=str(self.g.value(A.JPMorganApproval2025Evidence,A.exactText))
@@ -50,6 +62,8 @@ class PersonaEvidenceTests(unittest.TestCase):
         """Check that richer evidence reaches existing competency paths."""
         self.assertIn((A.CommonwealthBank,A.hasGovernanceBody,A.CBAAIRiskCommittee2025),self.g)
         self.assertIn((A.CBAAISystemDefinition,A.statedBy,A.CommonwealthBank),self.g)
-        self.assertEqual(len(list(self.g.query((ROOT/'queries/cq08-high-risk-vocabulary.rq').read_text()))),2)
+        rows = self.g.query((ROOT/'queries/cq08-high-risk-vocabulary.rq').read_text())
+        self.assertTrue({A.EUAIActHighRiskEvidence, A.JPMorganTiering2025Evidence}
+                        <= {row.evidence for row in rows})
 
 if __name__ == '__main__': unittest.main()

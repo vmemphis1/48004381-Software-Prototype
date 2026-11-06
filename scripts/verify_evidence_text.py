@@ -26,7 +26,7 @@ Exit status is non-zero if any quote could not be found on its cited page.
 from __future__ import annotations
 
 import argparse
-import html
+from html.parser import HTMLParser
 import re
 import sys
 from pathlib import Path
@@ -83,31 +83,56 @@ def page_number(reference: str) -> int | None:
 UNREADABLE = "\x00unreadable"
 
 
-def pdf_pages(path: Path) -> list[str]:
-    """Normalised text per page, tolerating pages pypdf cannot decode.
+class PdfPages:
+    """Extract only the cited pages, unless a mismatch requires a wider search."""
+    def __init__(self, path: Path):
+        self.reader = PdfReader(path)
+        self.cache = {}
 
-    Filed annual reports embed subset fonts that occasionally violate the spec
-    -- one document in this corpus declares both /FontFile and /FontFile3 on a
-    single descriptor, which pypdf rejects outright. Extraction is therefore
-    attempted page by page, and a page that cannot be decoded is marked rather
-    than silently returned as empty, which would look identical to a quote that
-    is genuinely absent.
-    """
-    reader = PdfReader(str(path))
-    pages: list[str] = []
-    for page in reader.pages:
-        try:
-            pages.append(normalise(page.extract_text() or ""))
-        except Exception:
-            pages.append(UNREADABLE)
-    return pages
+    def __len__(self):
+        return len(self.reader.pages)
+
+    def __getitem__(self, index):
+        if index < 0 or index >= len(self):
+            raise IndexError(index)
+        if index not in self.cache:
+            try:
+                self.cache[index] = normalise(self.reader.pages[index].extract_text() or "")
+            except Exception:
+                self.cache[index] = UNREADABLE
+        return self.cache[index]
+
+
+class ArchiveText(HTMLParser):
+    """Collect text from the same HTML elements that the preview can highlight."""
+    skip = {"head", "script", "style", "template", "noscript", "ix:hidden"}
+    void = {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta",
+            "param", "source", "track", "wbr"}
+
+    def __init__(self):
+        super().__init__()
+        self.ignored = []
+        self.parts = []
+
+    def handle_starttag(self, tag, attrs):
+        if tag not in self.void and (self.ignored or tag in self.skip or "hidden" in dict(attrs)):
+            self.ignored.append(tag)
+
+    def handle_endtag(self, tag):
+        if tag in self.ignored:
+            while self.ignored.pop() != tag:
+                pass
+
+    def handle_data(self, data):
+        if not self.ignored:
+            self.parts.append(data)
 
 
 def html_text(path: Path) -> str:
-    """Extract readable text from an archived HTML document."""
-    raw = path.read_text(encoding="utf-8", errors="replace")
-    raw = re.sub(r"<(script|style)\b.*?</\1>", " ", raw, flags=re.S | re.I)
-    return normalise(html.unescape(re.sub(r"<[^>]+>", " ", raw)))
+    parser = ArchiveText()
+    parser.feed(path.read_text(encoding="utf-8-sig", errors="replace"))
+    parser.close()
+    return normalise(" ".join(parser.parts))
 
 
 def fragments(quote: str) -> list[str]:
@@ -122,31 +147,17 @@ def fragments(quote: str) -> list[str]:
     return [part for part in parts if part]
 
 
-def _contains_run(haystack: str, run: str) -> bool:
-    """One contiguous run, tolerating how a given PDF spaces its text.
-
-    Extraction quality varies per document: some of these reports come back with
-    spurious spaces inside words ("a ppropriately", "o f data"), which defeats a
-    plain substring test even though the sentence is plainly on the page. Compare
-    with whitespace removed as a fallback so the check measures provenance rather
-    than the quirks of one file's font encoding.
-    """
-    if run in haystack:
-        return True
-    return re.sub(r"\s+", "", run) in re.sub(r"\s+", "", haystack)
-
-
 def contains(haystack: str, quote: str) -> bool:
     """Require the complete quote; elided fragments must occur in order.
 
-    Whitespace differences tolerate PDF text layout. A prefix is sufficient for
-    a visual highlight, but cannot establish that the rest of a quote is real.
+    Whitespace differences tolerate PDF text layout.
     """
-    if not quote.strip():
+    parts = fragments(quote.strip())
+    if not parts:
         return False
     compact = re.sub(r"\s+", "", haystack)
     cursor = 0
-    for part in fragments(quote):
+    for part in parts:
         needle = re.sub(r"\s+", "", part)
         found = compact.find(needle, cursor)
         if found < 0:
@@ -164,7 +175,7 @@ def main() -> int:
     graph = Graph()
     graph.parse(ROOT / "ontology" / "ai-finance-governance.ttl", format="turtle")
 
-    text_cache: dict[Path, list[str] | str] = {}
+    text_cache: dict[Path, PdfPages | str] = {}
     results: list[tuple[str, str, str]] = []
 
     for snippet in sorted(graph.subjects(RDF.type, AFG.EvidenceSnippet)):
@@ -190,7 +201,7 @@ def main() -> int:
 
         # Several snippets often cite one report; extract each archived file once.
         if path not in text_cache:
-            text_cache[path] = pdf_pages(path) if path.suffix.lower() == ".pdf" else html_text(path)
+            text_cache[path] = PdfPages(path) if path.suffix.lower() == ".pdf" else html_text(path)
         content = text_cache[path]
 
 
@@ -203,9 +214,7 @@ def main() -> int:
 
         wanted = page_number(reference)
         if wanted is None:
-            found = any(contains(page, quote) for page in content)
-            results.append(("OK" if found else "FAIL", name,
-                            f"{reference or 'no page reference'}; searched whole file"))
+            results.append(("FAIL", name, f"{reference or 'no page reference'}; specify a PDF page"))
             continue
 
         if not 1 <= wanted <= len(content):
@@ -252,11 +261,10 @@ def main() -> int:
           f"{verified} quotes verified on the cited page.")
     if unreadable:
         print(f"{len(unreadable)} could not be checked here because pypdf cannot decode "
-              "the page; these still render and highlight in the explorer, which uses "
-              "pdf.js.")
+              "the page. Inspect these references in the explorer.")
     # Unreadable is distinct from a missing quotation, but neither verifies it.
     if failures or unreadable:
-        print(f"{len(failures)} need attention.")
+        print(f"{len(failures) + len(unreadable)} need attention.")
         return 1
     print("PASS: every checkable evidence quote is present on the page it cites.")
     return 0

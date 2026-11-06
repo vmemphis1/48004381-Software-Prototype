@@ -1,15 +1,16 @@
-# Financial institutions and their recorded AI governance policies.
+# Public policy and principles documents linked to sampled firms.
+# Scope: Each result has a recorded public policy URL. Firm jurisdiction identifies the firm's home market. The corpus does not track every country where each firm operates.
 PREFIX :     <https://w3id.org/ai-finance-governance#>
 PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 
-SELECT DISTINCT ?firmLabel ?policy ?policyURL
+SELECT DISTINCT ?firmLabel ?jurisdiction ?policy ?policyURL
 WHERE {
   ?firm a :FinancialInstitution ;
         rdfs:label ?firmLabel ;
         :hasGovernancePolicy ?policy .
   ?policy rdf:type/rdfs:subClassOf* :AIGovernancePolicy ;
-          rdfs:label ?policyLabel .
-  OPTIONAL { ?policy :policyURL ?policyURL }
+          :policyURL ?policyURL .
+  OPTIONAL { ?firm :jurisdiction ?jurisdiction }
 }
 ORDER BY ?firmLabel

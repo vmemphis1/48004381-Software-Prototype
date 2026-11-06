@@ -1,17 +1,5 @@
-import { el, esc, truncate, confidenceLabel } from './dom.js';
-import { api } from './api.js';
+import { el, esc, truncate } from './dom.js';
 import { openInspector } from './inspector.js';
-
-let labelIndex = {};
-
-/** Load the label and evidence indexes used by result cells. */
-export async function loadIndexes() {
-  const payload = await api.indexes();
-  labelIndex = payload.labels || {};
-}
-
-/** Look up an IRI by its display label. */
-export const iriForLabel = (label) => labelIndex[label];
 
 /** Render a query result cell with links where available. */
 export function renderCell(cell) {
@@ -33,7 +21,7 @@ export function renderCell(cell) {
   const value = cell.value ?? '';
   if (value === '') return el('span', { class: 'lit-empty' }, '—');
 
-  const resolved = labelIndex[value];
+  const resolved = cell.resolvedIri;
   if (resolved) {
     const wrap = el('span', {});
     wrap.append(
@@ -52,7 +40,7 @@ export function renderCell(cell) {
       truncate(value.replace(/^https?:\/\/(www\.)?/, ''), 52));
   }
 
-  const displayed = confidenceLabel(value);
+  const displayed = value;
 
 
   if (displayed.length > 150) {

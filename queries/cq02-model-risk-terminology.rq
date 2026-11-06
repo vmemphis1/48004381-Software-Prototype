@@ -10,7 +10,7 @@ WHERE {
          :usesTerminology ?term ;
          :denotesConcept  ?concept .
   ?concept rdf:type/rdfs:subClassOf* :ModelRisk .
-  ?actor   rdfs:label ?actorLabel .
+  ?actor   a :FinancialInstitution ; rdfs:label ?actorLabel .
   ?concept rdfs:label ?conceptLabel .
 }
 ORDER BY ?actorLabel

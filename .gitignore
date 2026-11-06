@@ -3,3 +3,6 @@
 # Python bytecode
 __pycache__/
 *.py[cod]
+
+.venv/
+/ontology/ai-finance-governance.lock

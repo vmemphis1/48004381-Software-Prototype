@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+from collections import Counter
 import threading
 import time
 from dataclasses import dataclass, field
@@ -11,7 +12,10 @@ from typing import Any
 
 from rdflib import Graph, Literal, URIRef
 from rdflib.namespace import OWL, RDF, RDFS
-from rdflib.plugins.sparql.results.jsonresults import JSONResultSerializer
+from rdflib.plugins.sparql.algebra import translateQuery
+from rdflib.plugins.sparql.parser import parseQuery
+from rdflib.plugins.sparql.parserutils import CompValue
+from pyparsing import ParseResults
 
 ROOT = Path(__file__).resolve().parents[2]
 ONTOLOGY = ROOT / "ontology" / "ai-finance-governance.ttl"
@@ -83,6 +87,20 @@ class EngineResult:
         }
 
 
+def _require_local_query(node) -> None:
+    """Inspect syntax before translation, including patterns nested in FILTER EXISTS."""
+    if isinstance(node, CompValue):
+        if node.name in ("ServiceGraphPattern", "DatasetClause"):
+            raise ValueError("This explorer queries the local graph. SERVICE and FROM are unavailable.")
+        children = node.values()
+    elif isinstance(node, (ParseResults, list, tuple)):
+        children = node
+    else:
+        return
+    for child in children:
+        _require_local_query(child)
+
+
 class GraphService:
     """Owns the parsed graph and every derived index built from it."""
 
@@ -94,7 +112,7 @@ class GraphService:
         self._lock = threading.RLock()
         self.graph: Graph = Graph()
         self.project_graph: Graph = Graph()
-        self._stamps: tuple[int, ...] = ()
+        self._stamps: tuple[tuple[int, int, int], ...] = ()
         self.loaded_at: float = 0.0
         self.load_ms: float = 0.0
 
@@ -105,9 +123,10 @@ class GraphService:
 
 
 
-    def _current_stamps(self) -> tuple[int, ...]:
+    def _current_stamps(self) -> tuple[tuple[int, int, int], ...]:
         """Return modification timestamps for the ontology files."""
-        return tuple(p.stat().st_mtime_ns if p.exists() else 0 for p in self.sources)
+        return tuple((stat.st_ino, stat.st_size, stat.st_mtime_ns)
+                     for stat in (path.stat() for path in self.sources))
 
     def reload(self, force: bool = False) -> bool:
         """Re-parse the Turtle sources if they changed. Returns True if reloaded."""
@@ -119,15 +138,10 @@ class GraphService:
             graph = Graph()
             for prefix, namespace in PREFIXES.items():
                 graph.bind(prefix or "afg", namespace, override=True)
-            for source in self.sources:
-                if source.exists():
-                    graph.parse(source, format="turtle")
+            project = Graph().parse(self.ontology, format="turtle")
+            graph += project
+            graph.parse(self.sources[1], format="turtle")
             self.graph = graph
-
-            # Keep a separate project-only graph for figures that exclude imported AIRO.
-            project = Graph()
-            if self.ontology.exists():
-                project.parse(self.ontology, format="turtle")
             self.project_graph = project
             self._stamps = stamps
             self.load_ms = (time.perf_counter() - started) * 1000
@@ -147,6 +161,9 @@ class GraphService:
             for subject, label in graph.subject_objects(RDFS.label)
             if isinstance(subject, URIRef)
         }
+
+        counts = Counter(self.labels.values())
+        self.unique_labels = {label: iri for iri, label in self.labels.items() if counts[label] == 1}
 
         classes: dict[str, dict[str, Any]] = {}
         for cls in set(graph.subjects(RDF.type, OWL.Class)):
@@ -168,28 +185,12 @@ class GraphService:
             }
 
 
-        for individual, cls in graph.subject_objects(RDF.type):
-            iri = str(cls)
-            if iri in classes:
-                classes[iri]["directInstances"] += 1
-
-
-        # Traverse each descendant class once, even if inheritance has multiple paths.
-        # Counts sum type assertions; an individual asserted in two classes can count twice.
         for iri, record in classes.items():
-            seen: set[str] = set()
-            stack = [iri]
-            while stack:
-                current = stack.pop()
-                if current in seen:
-                    continue
-                seen.add(current)
-                for child, child_record in classes.items():
-                    if current in child_record["parents"]:
-                        stack.append(child)
-            record["totalInstances"] = sum(
-                classes[c]["directInstances"] for c in seen if c in classes
-            )
+            cls = URIRef(iri)
+            descendants = graph.transitive_subjects(RDFS.subClassOf, cls)
+            record["directInstances"] = len(set(graph.subjects(RDF.type, cls)))
+            record["totalInstances"] = len({subject for child in descendants
+                                            for subject in graph.subjects(RDF.type, child)})
         self.classes = classes
 
         properties: dict[str, dict[str, Any]] = {}
@@ -252,6 +253,7 @@ class GraphService:
                 "value": str(value),
                 "datatype": str(value.datatype) if value.datatype else None,
                 "lang": value.language,
+                "resolvedIri": self.unique_labels.get(str(value)),
             }
         return {"type": "bnode", "value": str(value)}
 
@@ -262,46 +264,31 @@ class GraphService:
         started = time.perf_counter()
         try:
             with self._lock:
-                result = self.graph.query(sparql)
+                parsed = parseQuery(sparql)
+                _require_local_query(parsed)
+                prepared = translateQuery(parsed, initNs={**dict(self.graph.namespaces()), **PREFIXES})
+                result = self.graph.query(prepared)
+                answer = EngineResult(engine="rdflib", ok=True)
+                if result.type == "ASK":
+                    answer.boolean = bool(result)
+                elif result.type in ("CONSTRUCT", "DESCRIBE"):
+                    answer.columns = ["subject", "predicate", "object"]
+                    answer.rows = [[self._bind(term) for term in triple] for triple in result.graph]
+                else:
+                    variables = result.vars or []
+                    answer.columns = [str(var) for var in variables]
+                    answer.rows = [[self._bind(binding.get(var)) for var in variables]
+                                   for binding in result.bindings]
         except Exception as exc:
-            return EngineResult(
-                engine="rdflib",
-                ok=False,
-                elapsed_ms=(time.perf_counter() - started) * 1000,
-                error=f"{type(exc).__name__}: {exc}",
-            )
-        elapsed = (time.perf_counter() - started) * 1000
-
-        if result.type == "ASK":
-            return EngineResult(
-                engine="rdflib", ok=True, boolean=bool(result), elapsed_ms=elapsed
-            )
-        if result.type == "CONSTRUCT":
-            return EngineResult(
-                engine="rdflib",
-                ok=True,
-                columns=["subject", "predicate", "object"],
-                rows=[
-                    [self._bind(s), self._bind(p), self._bind(o)]
-                    for s, p, o in result.graph
-                ],
-                elapsed_ms=elapsed,
-            )
-
-        columns = [str(v) for v in (result.vars or [])]
-        rows = [[self._bind(row[var]) for var in (result.vars or [])] for row in result]
-        return EngineResult(
-            engine="rdflib", ok=True, columns=columns, rows=rows, elapsed_ms=elapsed
-        )
-
-
+            answer = EngineResult(engine="rdflib", ok=False, error=f"{type(exc).__name__}: {exc}")
+        answer.elapsed_ms = (time.perf_counter() - started) * 1000
+        return answer
 
     def stats(self) -> dict[str, Any]:
         """Headline figures.
 
         `project` counts `ai-finance-governance.ttl` alone and therefore matches
-        `scripts/audit_ontology.py` and the figures quoted in
-        `ontology/competency-question-evaluation.md`. `combined` adds the imported
+        `scripts/audit_ontology.py`. `combined` adds the imported
         AIRO vocabulary, which is what queries actually run against.
         """
         project = self.project_graph

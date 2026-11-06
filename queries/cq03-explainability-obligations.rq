@@ -1,15 +1,17 @@
-# Explainability obligations in regulatory frameworks.
+# Explainability provisions in the archived regulatory frameworks.
+# Scope: The Australian principles and NIST RMF describe voluntary guidance. The EU Act provision addresses high-risk systems within its scope. The graph records framework jurisdiction and quoted wording. Applicability to a particular Australian firm requires separate evidence.
 PREFIX :     <https://w3id.org/ai-finance-governance#>
 PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 
-SELECT DISTINCT ?framework ?frameworkLabel ?jurisdiction ?obligationLabel
+SELECT DISTINCT ?framework ?frameworkLabel ?jurisdiction ?obligationLabel ?sourceWording
 WHERE {
   ?framework a :RegulatoryFramework ;
              rdfs:label ?frameworkLabel ;
              :hasGovernanceRequirement ?obligation .
   ?obligation rdf:type/rdfs:subClassOf* :ExplainabilityObligation ;
               rdfs:label ?obligationLabel .
+  OPTIONAL { ?obligation :hasEvidence/:exactText ?sourceWording }
   OPTIONAL { ?framework :jurisdiction ?jurisdiction }
 }
 ORDER BY ?frameworkLabel

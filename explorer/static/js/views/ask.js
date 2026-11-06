@@ -11,15 +11,13 @@ export async function render(container, params = {}) {
   const page = el('div', { class: 'page' });
   container.replaceChildren(page);
 
-  if (!state.questions.length) {
-    page.append(loading('Reading the query pack…'));
-    const { questions } = await api.questions();
-    setState({ questions });
-  }
+  page.append(loading('Reading the query pack…'));
+  const { questions } = await api.questions();
+  if (!page.isConnected) return;
 
   const results = el('div', { id: 'result-panel' });
-  const competency = state.questions.filter((q) => q.kind === 'competency');
-  const supporting = state.questions.filter((q) => q.kind === 'supporting');
+  const competency = questions.filter((q) => q.kind === 'competency');
+  const supporting = questions.filter((q) => q.kind === 'supporting');
 
   clear(page);
   page.append(el('div', { class: 'page-head' },
@@ -37,7 +35,7 @@ export async function render(container, params = {}) {
 
   const wanted = params.q || state.activeQuestionId;
   if (wanted) {
-    const question = [...state.questions, ...savedQuestions].find((q) => q.id === wanted);
+    const question = [...questions, ...savedQuestions].find((q) => q.id === wanted);
     if (question) run(question, results, false);
   }
 }
@@ -140,14 +138,14 @@ export async function run(question, container, scroll = true) {
 
   let payload;
   try {
-    payload = await api.query(question.sparql);
+    payload = question.kind === 'bookmark' ? await api.query(question.sparql) : await api.runQuestion(question.id);
   } catch (error) {
     if (revision !== requestRevision || !container.isConnected) return;
     clear(container).append(el('div', { class: 'banner danger' }, String(error.message)));
     return;
   }
   if (revision !== requestRevision || !container.isConnected) return;
-  clear(container).append(resultPanel(question, payload));
+  clear(container).append(resultPanel(payload.question || question, payload));
 
 
   if (scroll) container.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -170,6 +168,7 @@ export function resultPanel(question, payload, { showSparql = true } = {}) {
       }, 'See in graph') : null),
   );
   wrap.append(head);
+  if (question.notes) wrap.append(el('p', { class: 'result-note' }, question.notes));
 
   if (!result.ok) {
     wrap.append(el('div', { class: 'banner danger' }, result.error));
@@ -180,12 +179,6 @@ export function resultPanel(question, payload, { showSparql = true } = {}) {
     wrap.append(emptyState(question));
   } else {
     wrap.append(table(result, question.columnLabels));
-  }
-
-  if (question.notes) {
-    wrap.append(el('details', { class: 'disclose' },
-      el('summary', {}, 'What this result means'),
-      el('p', { class: 'result-note', html: question.notes.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>') })));
   }
 
   if (showSparql) {

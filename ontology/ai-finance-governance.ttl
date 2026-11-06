@@ -24,7 +24,7 @@
                                            dcterms:title "AI Finance Governance Ontology"@en ;
                                            rdfs:comment "Developed using the Ontology 101 (Noy 2001) + METHONTOLOGY (Fernandez-Lopez 1997) hybrid methodology."@en ;
                                            rdfs:comment "FIBO is reused by mapping rather than by import. The single reused FIBO term is declared locally as a minimal external reference (MIREOT style) and aligned with rdfs:subClassOf, so no FIBO module is loaded at run time. See ORSD section 7.2."@en ;
-                                           rdfs:comment "Version 1.4 adopts the project namespace at w3id.org. The redirect registration remains an external publication step documented in README.md."@en ;
+                                           rdfs:comment "Version 1.4 adopts the project namespace at w3id.org."@en ;
                                            owl:versionInfo "1.6"@en .
 
 # Datatypes
@@ -129,7 +129,7 @@ xsd:gYear rdf:type rdfs:Datatype .
                      rdfs:label "references framework"@en .
 
 :requiresApprovalProcess rdf:type owl:ObjectProperty ;
-                         rdfs:domain :AIGovernancePolicy ;
+                         rdfs:domain :GovernanceArtifact ;
                          rdfs:range :AIDeploymentApproval ;
                          rdfs:label "requires approval process"@en .
 
@@ -222,7 +222,6 @@ xsd:gYear rdf:type rdfs:Datatype .
            rdfs:label "policy URL"@en .
 
 :retrievalDate rdf:type owl:DatatypeProperty ;
-               rdfs:domain :SourceDocument ;
                rdfs:range xsd:date ;
                rdfs:label "retrieval date"@en .
 
@@ -232,7 +231,6 @@ xsd:gYear rdf:type rdfs:Datatype .
                   rdfs:label "section reference"@en .
 
 :sha256 rdf:type owl:DatatypeProperty ;
-        rdfs:domain :SourceDocument ;
         rdfs:range xsd:string ;
         rdfs:label "SHA-256 checksum"@en .
 
@@ -287,7 +285,7 @@ fibo-fbc-fct-fse:FinancialInstitution rdf:type owl:Class ;
 
 :AIGovernancePolicy rdf:type owl:Class ;
                     rdfs:subClassOf :GovernanceArtifact ;
-                    rdfs:comment "A formal document published by a firm or regulator that sets out principles, rules, or standards for the development, deployment, and oversight of AI systems."@en ;
+                    rdfs:comment "A formal policy setting out principles, rules, or standards for the development, deployment, and oversight of AI systems. A public disclosure may identify an internal policy whose text has not been published."@en ;
                     rdfs:label "AI Governance Policy"@en ;
                     skos:altLabel "AI Ethics Policy"@en ,
                                   "AI Framework"@en ,
@@ -516,7 +514,7 @@ airo:Risk rdf:type owl:Class .
                                        :RegulatoryFramework ;
                               :jurisdiction "Australia" ;
                               dcterms:description "Australia's AI Ethics Principles, eight voluntary principles published by the Department of Industry, Science and Resources."@en ;
-                              rdfs:comment "Represented as a regulatory framework, resolving the open question recorded in ORSD section 18. The framework is voluntary rather than binding, which is the same status already carried by the NIST AI RMF, so a separate 'reference framework' class would add a distinction the competency questions never draw. The publisher records the principles in the past tense and states that they have been evolved by the Guidance for AI Adoption of 21 October 2025; they are retained because competency question 4 names them explicitly and because firm policies in this corpus still mirror their wording."@en ;
+                              rdfs:comment "Represented as a regulatory framework for comparison with other sources. The framework is voluntary rather than binding, which is the same status already carried by the NIST AI RMF, so a separate 'reference framework' class would add a distinction the competency questions never draw. The publisher records the principles in the past tense and states that they have been evolved by the Guidance for AI Adoption of 21 October 2025; they are retained because competency question 4 names them explicitly and because firm policies in this corpus still mirror their wording."@en ;
                               rdfs:label "Australia's AI Ethics Principles"@en ;
                               skos:altLabel "AI Ethics Principles"@en .
 
@@ -629,7 +627,7 @@ airo:Risk rdf:type owl:Class .
 :ANZAIGovernanceFramework2024 rdf:type owl:NamedIndividual ,
                                       :AIGovernanceFramework ;
                              :hasEvidence :ANZ2024AIGovernanceEvidence ;
-                             :usesTerminology "governance and risk management frameworks" ;
+                             skos:altLabel "governance and risk management frameworks"@en ;
                              rdfs:label "ANZ AI Governance and Risk Management Frameworks (2024 disclosure)"@en .
 
 :ANZModelMonitoringAndRevalidation rdf:type owl:NamedIndividual ,
@@ -698,7 +696,7 @@ airo:Risk rdf:type owl:Class .
 :CBAResponsibleAIToolkit2024 rdf:type owl:NamedIndividual ,
                                      :AIGovernanceFramework ;
                             :hasEvidence :CBA2024ResponsibleAIToolkitEvidence ;
-                            :usesTerminology "Responsible AI toolkit" ;
+                            skos:altLabel "Responsible AI toolkit"@en ;
                             rdfs:label "CBA Responsible AI Toolkit"@en .
 
 :CBAResponsibleAIUse2024 rdf:type owl:NamedIndividual ,
@@ -769,7 +767,7 @@ airo:Risk rdf:type owl:Class .
 :HSBCAIModelRiskFramework2024 rdf:type owl:NamedIndividual ,
                                       :AIGovernanceFramework ;
                              :hasEvidence :HSBC2024AIModelReviewEvidence ;
-                             :usesTerminology "governance framework" ;
+                             skos:altLabel "governance framework"@en ;
                              rdfs:label "HSBC AI and Machine Learning Model Risk Framework"@en .
 
 :HSBCBiasTermUsage rdf:type owl:NamedIndividual ,
@@ -821,7 +819,7 @@ airo:Risk rdf:type owl:Class .
 :HSBCPrinciplesEthicalUseOfDataAndAI rdf:type owl:NamedIndividual ,
                                               :AIGovernancePolicy ;
                                      :hasEvidence :HSBCPrinciplesEvidence ;
-                                     :policyURL "https://www.hsbc.com/ai" ;
+                                     :policyURL "https://www.hsbc.com/ai"^^xsd:anyURI ;
                                      rdfs:comment "Named and published by HSBC, and cited by URL in the annual report. Whether a set of published principles meets the project's 'formal AI governance policy' threshold is the same open question the supervisor was already asked to settle for CBA's public approach page."@en ;
                                      rdfs:label "HSBC Principles for the Ethical Use of Data and AI"@en .
 
@@ -873,7 +871,7 @@ airo:Risk rdf:type owl:Class .
 :NABGenerativeAIGovernanceMeasures2024 rdf:type owl:NamedIndividual ,
                                                :AIGovernanceFramework ;
                                       :hasEvidence :NAB2024AIGovernanceEvidence ;
-                                      :usesTerminology "ethical guidelines and protocols" ;
+                                      skos:altLabel "ethical guidelines and protocols"@en ;
                                       rdfs:label "NAB Generative AI Governance Measures"@en .
 
 :NABGenerativeAIOperationalRisk rdf:type owl:NamedIndividual ,
@@ -975,7 +973,7 @@ airo:Risk rdf:type owl:Class .
 :APRACPG234Document rdf:type owl:NamedIndividual ,
                              :SourceDocument ;
                     :documentType "Prudential practice guide" ;
-                    :documentURL "https://www.apra.gov.au/sites/default/files/cpg_234_information_security.pdf" ;
+                    :documentURL "https://www.apra.gov.au/practice-guides/cpg-234"^^xsd:anyURI ;
                     :localPath "corpus/regulatory/apra/APRA_CPG234_Information_Security.pdf" ;
                     :retrievalDate "2026-08-31"^^xsd:date ;
                     :sha256 "38116fa7dc9c103e9c3e8931df389bf002f7d878040cb2c11f175a18125635dd" ;
@@ -1017,7 +1015,7 @@ airo:Risk rdf:type owl:Class .
                           :SourceDocument ;
                  :documentDate "2024" ;
                  :documentType "Regulation" ;
-                 :documentURL "https://eur-lex.europa.eu/eli/reg/2024/1689/oj" ;
+                 :documentURL "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"^^xsd:anyURI ;
                  :localPath "corpus/regulatory/eu-ai-act/EU_AI_Act_2024-1689.pdf" ;
                  :retrievalDate "2026-08-31"^^xsd:date ;
                  :sha256 "bba630444b3278e881066774002a1d7824308934f49ccfa203e65be43692f55e" ;
@@ -1102,7 +1100,7 @@ airo:Risk rdf:type owl:Class .
                             :SourceDocument ;
                    :documentDate "2023" ;
                    :documentType "Voluntary framework" ;
-                   :documentURL "https://nvlpubs.nist.gov/nistpubs/ai/NIST.AI.100-1.pdf" ;
+                   :documentURL "https://www.nist.gov/publications/artificial-intelligence-risk-management-framework-ai-rmf-10"^^xsd:anyURI ;
                    :localPath "corpus/regulatory/nist-ai-rmf/NIST_AI_RMF_1.0.pdf" ;
                    :retrievalDate "2026-08-31"^^xsd:date ;
                    :sha256 "7576edb531d9848825814ee88e28b1795d3a84b435b4b797d3670eafdc4a89f1" ;
@@ -2369,7 +2367,7 @@ airo:Risk rdf:type owl:Class .
     rdfs:label "NIST GenAI Profile — AI RMF: Generative Artificial Intelligence Profile" ;
     :documentDate "2024" ;
     :documentType "Public source; see statement status" ;
-    :documentURL "https://nvlpubs.nist.gov/nistpubs/ai/NIST.AI.600-1.pdf"^^xsd:anyURI ;
+    :documentURL "https://www.nist.gov/publications/artificial-intelligence-risk-management-framework-generative-artificial-intelligence"^^xsd:anyURI ;
     :hasStatement :NISTGenAIInventoryStatement,
         :NISTGenAISupplierStatement ;
     :localPath "corpus/regulatory/nist-ai-rmf/NIST_AI_600-1_GenAI_Profile.pdf" ;

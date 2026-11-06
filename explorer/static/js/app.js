@@ -1,7 +1,5 @@
 import { qs, toast, el } from './dom.js';
 import { api } from './api.js';
-import { setState } from './state.js';
-import { loadIndexes } from './cells.js';
 import { closeInspector } from './inspector.js';
 
 import * as ask from './views/ask.js';
@@ -25,8 +23,11 @@ function parseHash() {
   return { id: id || 'ask', params: Object.fromEntries(new URLSearchParams(query || '')) };
 }
 
+let navigation = 0;
+
 /** Render the view selected by the current route. */
 async function route() {
+  const current = ++navigation;
   const { id, params } = parseHash();
   const entry = ROUTES.find((r) => r.id === id);
   if (!entry) {
@@ -36,12 +37,14 @@ async function route() {
   qs('#tabs').querySelectorAll('button').forEach((button) => {
     button.classList.toggle('is-active', button.dataset.route === entry.id);
   });
+  graph.dispose();
   closeInspector();
   const view = qs('#view');
   view.scrollTop = 0;
   try {
     await entry.view.render(view, params);
   } catch (error) {
+    if (current !== navigation) return;
     view.replaceChildren(el('div', { class: 'page' },
       el('div', { class: 'banner danger' }, `${entry.label} failed to render: ${error.message}`)));
     console.error(error);
@@ -90,8 +93,7 @@ async function boot() {
     qs('#reload').disabled = true;
     try {
       await api.reload();
-      await Promise.all([refreshStatus(), loadIndexes()]);
-      setState({ questions: [] });
+      await refreshStatus();
       await route();
       toast('Reloaded from disk.');
     } catch (error) {
@@ -101,10 +103,7 @@ async function boot() {
     }
   });
 
-  await Promise.all([refreshStatus(), loadIndexes()]);
-  const { questions } = await api.questions();
-  setState({ questions });
-
+  await refreshStatus();
   window.addEventListener('hashchange', route);
   await route();
 }

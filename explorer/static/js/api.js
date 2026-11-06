@@ -57,6 +57,11 @@ export const api = {
     return request(`/api/graph?${params}`);
   },
 
+  runQuestion: (questionId) => request('/api/query', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ questionId }),
+  }),
+
   /** Execute a SPARQL query. */
   query: (sparql) =>
     request('/api/query', {

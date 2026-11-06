@@ -43,13 +43,6 @@ export function truncate(text, limit) {
   return `${cut.slice(0, space > limit * 0.6 ? space : limit)}…`;
 }
 
-/** Map a recorded confidence value to a display label. */
-export function confidenceLabel(value) {
-  const text = String(value ?? '');
-  const match = text.match(/^(high|medium|low)\s+-\s+/i);
-  return match ? match[1].toLowerCase() : text;
-}
-
 let toastTimer;
 
 /** Show a temporary notification. */

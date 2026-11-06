@@ -1,6 +1,5 @@
-import { el, clear, loading, toast } from '../dom.js';
+import { el, clear, loading } from '../dom.js';
 import { api } from '../api.js';
-import { loadIndexes } from '../cells.js';
 import { openInspector } from '../inspector.js';
 import { openDocument } from '../viewer.js';
 import { corpusForm } from './corpus-form.js';
@@ -21,7 +20,6 @@ export async function render(container, { saved } = {}) {
       clear(editor).append(corpusForm(options, { document,
         onCancel: () => { ++editRevision; clear(editor); },
         onSaved: async (result) => {
-          try { await loadIndexes(); } catch { toast('Saved. Reload the explorer to refresh graph labels.'); }
           if (current === editRevision && editor.isConnected) await render(container, { saved: result });
         },
       }));

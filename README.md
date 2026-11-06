@@ -1,7 +1,7 @@
 # Explorer
 ## Dependencies and setup
 
-The prototype needs Python 3 and a modern web browser. Its Python dependencies
+The prototype needs Python 3.10 or later and a modern web browser. Its Python dependencies
 are listed in `scripts/requirements.txt`.
 
 From a terminal in the repository root, create a virtual environment and install
@@ -24,7 +24,14 @@ explorer/run.sh
 The server opens the explorer at <http://127.0.0.1:8042/>.
 To choose another port, use `explorer/run.sh --port 8043`, for example.
 
-To run the test suite, install Node.js and run `python3 -m unittest discover -s explorer/tests -v`.
+To repeat the repository checks, install Node.js 22.7 or later for the browser-module tests, then run
+
+```bash
+python3 -m unittest discover -s explorer/tests -v
+python3 scripts/audit_ontology.py
+python3 scripts/run_queries.py
+python3 scripts/verify_evidence_text.py
+```
 
 **Explore** — the default landing view. It shows the ten competency questions
 and supporting queries as cards, followed by **Bookmarks** for your saved Build

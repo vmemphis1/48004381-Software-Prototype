@@ -169,6 +169,29 @@ class CorpusTests(unittest.TestCase):
                 self.assertEqual(self.service.ontology.read_text(), self.original)
                 self.assertFalse(self.archives())
 
+    def test_pdf_validation_and_cited_page_bounds(self):
+        from pypdf import PdfWriter
+        payload = self.payload()
+        upload = payload['file']
+        upload.update(name='source.pdf', content=base64.b64encode(b'%PDF-invalid').decode())
+        with self.assertRaisesRegex(ValueError, 'PDF could not be opened'):
+            corpus.save_document(self.service, payload)
+        buffer = BytesIO()
+        writer = PdfWriter()
+        writer.add_blank_page(width=200, height=200)
+        writer.write(buffer)
+        upload['content'] = base64.b64encode(buffer.getvalue()).decode()
+        snippet = payload['snippets'][0]
+        snippet['pageReference'] = 'PDF page 2'
+        with self.assertRaisesRegex(ValueError, 'PDF page from 1 to 1'):
+            corpus.save_document(self.service, payload)
+        self.assertFalse(self.archives())
+        snippet['pageReference'] = 'PDF page 1'
+        saved = corpus.save_document(self.service, payload)
+        snippet['pageReference'] = 'Not paginated'
+        with self.assertRaisesRegex(ValueError, 'PDF page'):
+            corpus.add_snippets(self.service, saved['document']['iri'], payload)
+
     def test_filename_is_confined_and_duplicate_upload_is_rejected(self):
         """Check that filename is confined and duplicate upload is rejected."""
         payload = self.payload()
@@ -214,6 +237,44 @@ class CorpusTests(unittest.TestCase):
         self.assertEqual(len(self.archives()), 4)
         self.assertTrue(all(views.document_record(restarted, r['document']['iri'])['exists'] for r in results))
         self.assertTrue(all((Namespace('')[r['snippets'][0]], RDF.type, A.EvidenceSnippet) in restarted.graph for r in results))
+
+    def test_independent_services_serialize_duplicate_uploads(self):
+        other = GraphService(self.root)
+        payload = self.payload()
+
+        def save(service):
+            try:
+                corpus.save_document(service, payload)
+            except ValueError as exc:
+                return str(exc)
+            return 'saved'
+
+        with ThreadPoolExecutor(max_workers=2) as workers:
+            outcomes = list(workers.map(save, [self.service, other]))
+        self.assertEqual(outcomes.count('saved'), 1)
+        self.assertTrue(any('already in the corpus' in outcome for outcome in outcomes))
+        self.assertEqual(len(self.archives()), 1)
+
+    def test_query_api_rejects_invalid_json_shape_and_cross_origin_reads(self):
+        for payload in ([], {'sparql': 123}, {'sparql': ''}):
+            self.assertEqual(self.request('POST', '/api/query', payload)[0], 400)
+        for endpoint in ('/api/query', '/api/builder-options', '/api/reload'):
+            self.assertEqual(self.request('POST', endpoint, {'sparql': 'ASK {}'},
+                                         origin='https://example.invalid')[0], 400)
+
+    def test_open_card_runs_current_query_file(self):
+        pack = self.root / 'queries'
+        pack.mkdir()
+        with patch('app.questions.QUERY_DIR', pack):
+            query = pack / 'changing.rq'
+            for word in ('old', 'new'):
+                query.write_text(f'# {word} question\nSELECT ("{word}" AS ?word) WHERE {{}}')
+                status, response = self.request('POST', '/api/query', {'questionId': 'changing'})
+                self.assertEqual(status, 200)
+                self.assertEqual(response['result']['rows'][0][0]['value'], word)
+                self.assertEqual(response['question']['question'], word + ' question')
+            query.unlink()
+            self.assertEqual(self.request('POST', '/api/query', {'questionId': 'changing'})[0], 404)
 
     def test_api_creation_refreshes_documents_and_query_results(self):
         """Check that api creation refreshes documents and query results."""

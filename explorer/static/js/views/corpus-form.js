@@ -13,8 +13,11 @@ const display = (record) => record.label || record.curie || record.iri;
 const input = (attrs = {}) => el('input', { class: 'corpus-control', type: 'text', ...attrs });
 
 /** Build a labeled form control. */
-const field = (name, control, help) => el('label', { class: 'corpus-field' },
-  el('span', {}, name), control, help ? el('small', {}, help) : null);
+const field = (name, control, help) => {
+  control.setAttribute('aria-label', name);
+  return el('label', { class: 'corpus-field' },
+    el('span', {}, name), control, help ? el('small', {}, help) : null);
+};
 
 /** Build a select control from the supplied choices. */
 function select(choices, attrs = {}) {
@@ -91,9 +94,11 @@ export function corpusForm(options, { document, onCancel, onSaved }) {
   const file = input({ type: 'file', accept: '.pdf,.html,.htm', required: !document,
     onchange: () => {
       if (!title.value) title.value = file.files[0]?.name.replace(/\.[^.]+$/, '') || '';
-      if (/\.html?$/i.test(file.files[0]?.name || '')) {
-        snippets.forEach((s) => { if (!s.page.value) s.page.value = 'Not paginated'; });
-      }
+      const html = /\.html?$/i.test(file.files[0]?.name || '');
+      snippets.forEach(({ page }) => {
+        if (html && !page.value) page.value = 'Not paginated';
+        if (!html && page.value === 'Not paginated') page.value = '';
+      });
     },
   });
   const documentClass = select([[iri('SourceDocument'), 'Source document'],

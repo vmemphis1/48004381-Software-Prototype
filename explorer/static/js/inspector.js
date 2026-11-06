@@ -1,4 +1,4 @@
-import { el, clear, qs, truncate, toast, confidenceLabel } from './dom.js';
+import { el, clear, qs, truncate, toast } from './dom.js';
 import { api, docUrl } from './api.js';
 import { openDocument } from './viewer.js';
 
@@ -24,6 +24,7 @@ export async function openInspector(iri, { scrollTo } = {}) {
   try {
     resource = await api.resource(iri);
   } catch (error) {
+    if (current !== iri) return;
     qs('#inspector-body').replaceChildren(
       el('div', { class: 'banner danger' }, String(error.message)));
     return;
@@ -188,7 +189,7 @@ function linkList(groups, key, inbound = false) {
         values.append(el('a', { href: value.value, target: '_blank', rel: 'noopener' },
           truncate(value.value.replace(/^https?:\/\/(www\.)?/, ''), 44)));
       } else {
-        const displayed = confidenceLabel(value.value);
+        const displayed = value.value;
         values.append(el('span', { title: displayed }, truncate(displayed, 190)));
       }
     });

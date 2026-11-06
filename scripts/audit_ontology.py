@@ -3,11 +3,12 @@
 
 from __future__ import annotations
 
+import csv
 import hashlib
 import re
 from pathlib import Path
 
-from rdflib import Graph, Namespace, RDF, RDFS, OWL, URIRef
+from rdflib import Graph, Literal, Namespace, RDF, RDFS, OWL, URIRef, XSD
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -69,27 +70,12 @@ def unpopulated_local_classes(graph: Graph) -> set[URIRef]:
         for value in graph.subjects(RDF.type, OWL.Class)
         if isinstance(value, URIRef) and str(value).startswith(str(AFG))
     }
-    # rdflib does not materialize inherited types, so inspect local subclasses
-    # explicitly before deciding that a parent class has no instances.
-    children: dict[URIRef, set[URIRef]] = {value: set() for value in classes}
-    for child in classes:
-        for parent in graph.objects(child, RDFS.subClassOf):
-            if parent in classes:
-                children[parent].add(child)
-
-    def descendants(value: URIRef) -> set[URIRef]:
-        """Find all subclasses reachable from a class."""
-        found = {value}
-        for child in children[value]:
-            found.update(descendants(child))
-        return found
-
     return {
         value
         for value in classes
         if not any(
             True
-            for member in descendants(value)
+            for member in graph.transitive_subjects(RDFS.subClassOf, value)
             for _ in graph.subjects(RDF.type, member)
         )
     }
@@ -112,14 +98,16 @@ def check_competency_question_coverage(errors: list[str]) -> int:
     for number in numbers:
         matches = list(QUERY_DIR.glob(f"cq{number:02d}-*.rq"))
         require(
-            bool(matches),
-            f"Competency question {number} has no query file (expected queries/cq{number:02d}-*.rq)",
+            len(matches) == 1,
+            f"Competency question {number} needs one query file, found {len(matches)}",
             errors,
         )
 
     for path in sorted(QUERY_DIR.glob("cq*.rq")):
         match = re.match(r"cq(\d+)-", path.name)
-        if match:
+        if not match:
+            errors.append(f"Malformed competency query filename: {path.name}")
+        else:
             require(
                 int(match.group(1)) in numbers,
                 f"Query file has no matching ORSD competency question: {path.name}",
@@ -133,6 +121,21 @@ def main() -> int:
     errors: list[str] = []
     graph = Graph().parse(ONTOLOGY, format="turtle")
     airo = Graph().parse(AIRO_FILE, format="turtle")
+
+    combined = graph + airo
+    for kind in (OWL.ObjectProperty, OWL.DatatypeProperty):
+        for prop in graph.subjects(RDF.type, kind):
+            for subject, obj in graph.subject_objects(prop):
+                for endpoint, constraint in ((subject, RDFS.domain), (obj, RDFS.range)):
+                    for expected in graph.objects(prop, constraint):
+                        if isinstance(endpoint, Literal):
+                            actual = endpoint.datatype or (RDF.langString if endpoint.language else XSD.string)
+                            compatible = actual == expected
+                        else:
+                            compatible = any(expected in set(combined.transitive_objects(t, RDFS.subClassOf))
+                                             for t in combined.objects(endpoint, RDF.type))
+                        require(compatible, f"{local_name(prop)} {local_name(constraint)} on {endpoint}: "
+                                f"expected {expected}", errors)
 
     for invalid in (AIRO.AIRisk, AIRO.HighRiskAI, AIRO.ConformityAssessment):
         require(
@@ -252,7 +255,7 @@ def main() -> int:
     empty_classes = unpopulated_local_classes(graph)
     expected_empty_classes = {AFG.AISystem, AFG.HighRiskAISystem}
     require(
-        empty_classes == expected_empty_classes,
+        empty_classes <= expected_empty_classes,
         "Unexpected unpopulated local classes: "
         + ", ".join(sorted(local_name(value) for value in empty_classes)),
         errors,
@@ -280,11 +283,12 @@ def main() -> int:
     source_documents = set(graph.subjects(RDF.type, AFG.SourceDocument)) | set(
         graph.subjects(RDF.type, AFG.FirmAIGovernanceDisclosure)
     )
+    recorded_paths = set()
     for document in source_documents:
         paths = list(graph.objects(document, AFG.localPath))
-        require(bool(paths), f"Missing local path: {local_name(document)}", errors)
+        require(len(paths) == 1, f"Expected one local path: {local_name(document)}", errors)
         require(
-            any(graph.objects(document, AFG.documentURL)),
+            any(graph.objects(document, AFG.documentURL)) or any(str(p).startswith("corpus/uploads/") for p in paths),
             f"Missing official URL: {local_name(document)}",
             errors,
         )
@@ -295,7 +299,11 @@ def main() -> int:
         )
         if not paths:
             continue
-        path = ROOT / str(paths[0])
+        path = (ROOT / str(paths[0])).resolve()
+        if not path.is_relative_to(ROOT / "corpus"):
+            errors.append(f"Archive outside corpus: {local_name(document)}")
+            continue
+        recorded_paths.add(path)
         require(path.is_file(), f"Source file not found: {path}", errors)
         if path.is_file():
             recorded = {str(value) for value in graph.objects(document, AFG.sha256)}
@@ -305,9 +313,21 @@ def main() -> int:
                 errors,
             )
 
+    for archive in (ROOT / "corpus").rglob("*"):
+        if archive.suffix.lower() in (".htm", ".html", ".pdf") and archive.resolve() not in recorded_paths:
+            errors.append(f"Unregistered archive: {archive.relative_to(ROOT)}")
+
+    with (ROOT / "glossary" / "terms_v1.csv").open(encoding="utf-8", newline="") as handle:
+        for row in csv.DictReader(handle):
+            for iri in row["Ontology mapping"].split(";"):
+                term = URIRef(iri.strip())
+                require(any(graph.predicate_objects(term)) or any(airo.predicate_objects(term)),
+                        f"Unknown glossary mapping for {row['Term']}: {iri}", errors)
+
     evidence = set(graph.subjects(RDF.type, AFG.EvidenceSnippet))
     for item in evidence:
         for predicate, label in (
+            (AFG.exactText, "exact quotation"),
             (AFG.extractedFrom, "source"),
             (AFG.pageReference, "page reference"),
             (AFG.confidenceLevel, "confidence"),
@@ -348,13 +368,14 @@ def main() -> int:
             errors,
         )
 
+    public_policies = {policy for policy in graph.subjects(AFG.policyURL, None)
+                       if any(graph.subjects(AFG.hasGovernancePolicy, policy))}
     query_sets = {
         "firms_with_disclosures": set(
             graph.subjects(AFG.hasGovernanceDisclosure, None)
         ),
-        "firms_with_published_ai_policy": set(
-            graph.subjects(AFG.hasGovernancePolicy, None)
-        ),
+        "firms_with_published_ai_policy": {firm for policy in public_policies
+                                          for firm in graph.subjects(AFG.hasGovernancePolicy, policy)},
         "firms_with_approval_process": set(
             graph.subjects(AFG.hasApprovalProcess, None)
         ),
@@ -376,7 +397,7 @@ def main() -> int:
         f"{len(set(graph.subjects(RDF.type, OWL.DatatypeProperty)))} data properties"
     )
     print(
-        f"PASS population: {len(FIRMS)} firms, {len(source_documents)} source documents, "
+        f"PASS population: {len(set(graph.subjects(RDF.type, AFG.FinancialInstitution)))} firms, {len(source_documents)} source documents, "
         f"{len(evidence)} evidence snippets, {len(terminology)} terminology usages"
     )
     print(

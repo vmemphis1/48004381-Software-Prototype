@@ -1,4 +1,4 @@
-# Financial institutions and counts their governance disclosures.
+# Financial institutions and the number of governance disclosures recorded for each.
 PREFIX :     <https://w3id.org/ai-finance-governance#>
 PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>

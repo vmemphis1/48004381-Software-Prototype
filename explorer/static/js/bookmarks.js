@@ -12,6 +12,18 @@ function snapshotPlan(plan) {
   if (!isObject(plan) || plan.version !== 2 || typeof plan.rootClass !== 'string'
     || !Array.isArray(plan.steps) || !Number.isInteger(plan.nextId) || plan.nextId < 1
     || !(plan.hidden instanceof Set || Array.isArray(plan.hidden))) return null;
+  const sources = new Set(['record']);
+  const ids = new Set();
+  for (const step of plan.steps) {
+    if (!isObject(step) || !Number.isSafeInteger(step.id) || step.id < 1 || step.id >= plan.nextId
+      || ids.has(step.id) || !sources.has(step.from) || typeof step.property !== 'string') return null;
+    ids.add(step.id);
+    if (step.kind === 'relation') {
+      if (step.range != null && typeof step.range !== 'string') return null;
+      sources.add(`linked${step.id}`);
+    } else if (step.kind !== 'value' || !['is', 'show', 'absent', 'present'].includes(step.op)
+      || (step.op === 'is' && typeof step.value !== 'string')) return null;
+  }
   const hidden = [...plan.hidden];
   if (!hidden.every((column) => typeof column === 'string')) return null;
   // Sets do not survive JSON serialization; restore() recreates the Set on read.

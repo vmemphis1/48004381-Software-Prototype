@@ -3,8 +3,10 @@ from __future__ import annotations
 
 import base64
 import binascii
+from contextlib import contextmanager
 from datetime import date
 import hashlib
+from io import BytesIO
 import os
 from pathlib import Path
 import re
@@ -12,6 +14,7 @@ import tempfile
 from urllib.parse import urlparse
 from uuid import uuid4
 
+from pypdf import PdfReader
 from rdflib import Graph, Literal, URIRef
 from rdflib.namespace import DCTERMS, OWL, RDF, RDFS, XSD
 
@@ -150,7 +153,7 @@ def _target(service, additions, spec, owner, owner_types, document, quote):
     if spec.get('iri'):
         node = URIRef(_text(spec['iri'], 'Supported record', True, 1000))
         types = _types(service.graph, node)
-        if not types or any(_is_a(service.graph, types, A(name)) for name in ('SourceDocument', 'EvidenceSnippet')):
+        if (node, RDF.type, OWL.NamedIndividual) not in service.graph or any(_is_a(service.graph, types, A(name)) for name in ('SourceDocument', 'EvidenceSnippet')):
             raise ValueError('Choose an existing graph record to support.')
     else:
         cls = _allowed_class(service, spec.get('classIri'))
@@ -194,6 +197,8 @@ def _target(service, additions, spec, owner, owner_types, document, quote):
         if _is_a(service.graph, types, A('DefinitionStatement')) and not additions.value(node, A('definitionText')):
             additions.add((node, A('definitionText'), Literal(quote)))
         if _is_a(service.graph, types, A('TerminologyUsage')):
+            if not additions.value(node, A('usedByActor')) or not additions.value(node, A('denotesConcept')):
+                raise ValueError('A terminology usage needs an actor and a mapped concept.')
             additions.add((node, A('observedInDocument'), document))
             if not additions.value(node, A('usesTerminology')):
                 additions.add((node, A('usesTerminology'), Literal(label)))
@@ -202,7 +207,18 @@ def _target(service, additions, spec, owner, owner_types, document, quote):
     return node
 
 
-def _snippets(service, payload, additions, owner, owner_types, document):
+def _pdf_page_count(source) -> int:
+    """Verify that an archived PDF can open without a password and has pages."""
+    try:
+        count = len(PdfReader(source).pages)
+    except Exception as exc:
+        raise ValueError('The PDF could not be opened. Choose a readable PDF without a password.') from exc
+    if not count:
+        raise ValueError('The PDF contains no pages.')
+    return count
+
+
+def _snippets(service, payload, additions, owner, owner_types, document, page_count=None):
     """Validate evidence snippets and add their graph statements."""
     snippets = payload.get('snippets', [])
     if not isinstance(snippets, list) or len(snippets) > 50:
@@ -212,8 +228,11 @@ def _snippets(service, payload, additions, owner, owner_types, document):
         spec = _object(spec, f'Snippet {index}')
         quote = _text(spec.get('exactText'), f'Exact quote for snippet {index}', True)
         page = _text(spec.get('pageReference'), f'Page reference for snippet {index}', True, 1000)
-        if page.lower().startswith('pdf page') and not re.match(r'^PDF page [1-9]\d*(?:\b|$)', page, re.I):
-            raise ValueError('PDF page references must start with a positive page number, e.g. PDF page 3.')
+        pdf_page = views.parse_pdf_page(page)
+        if page_count is not None and (pdf_page is None or not 1 <= pdf_page <= page_count):
+            raise ValueError(f'Enter a PDF page from 1 to {page_count}, for example PDF page 1.')
+        if page_count is None and pdf_page is not None:
+            raise ValueError('For HTML use a section, printed page, or Not paginated.')
         target = _target(service, additions, spec.get('target'), owner, owner_types, document, quote)
         node = A('CorpusEvidence_' + uuid4().hex)
         identifiers.append(str(node))
@@ -240,10 +259,27 @@ def _url(value):
     return value
 
 
+@contextmanager
+def _write_lock(service):
+    """Lock a stable sibling inode because the Turtle file is atomically replaced."""
+    with service._lock, service.ontology.with_suffix('.lock').open('a+b') as lock:
+        if os.name == 'nt':
+            import msvcrt
+            lock.seek(0)
+            msvcrt.locking(lock.fileno(), msvcrt.LK_LOCK, 1)
+        else:
+            import fcntl
+            fcntl.flock(lock, fcntl.LOCK_EX)
+        # Closing the descriptor releases the OS lock, including on process exit.
+        yield
+
+
 def _append(service, additions):
     """Append without reformatting existing Turtle; never replace a concurrent edit."""
     path = service.ontology
-    stamp = (path.stat().st_mtime_ns, path.stat().st_size)
+    stamp = service._stamps
+    if service._current_stamps() != stamp:
+        raise ValueError('The ontology changed while saving. Please try again.')
     original = path.read_text(encoding='utf-8')
     for prefix, namespace in PREFIXES.items():
         additions.bind(prefix or 'afg', namespace)
@@ -259,7 +295,7 @@ def _append(service, additions):
             handle.flush()
             os.fsync(handle.fileno())
         # Detect edits made while the replacement was being prepared.
-        if (path.stat().st_mtime_ns, path.stat().st_size) != stamp:
+        if service._current_stamps() != stamp:
             raise ValueError('The ontology changed while saving. Your form is kept; please try again.')
         temporary.chmod(path.stat().st_mode & 0o777)
         os.replace(temporary, path)
@@ -286,6 +322,7 @@ def save_document(service: GraphService, payload: dict):
         raise ValueError('Documents must contain data and be at most 25 MB.')
     if suffix == '.pdf' and not data.startswith(b'%PDF-'):
         raise ValueError('The uploaded file is not a PDF.')
+    page_count = _pdf_page_count(BytesIO(data)) if suffix == '.pdf' else None
     if suffix != '.pdf':
         try:
             data.decode('utf-8-sig')
@@ -296,7 +333,7 @@ def save_document(service: GraphService, payload: dict):
         raise ValueError('Choose a source document or firm disclosure.')
     digest = hashlib.sha256(data).hexdigest()
     source_url = _url(_text(payload.get('documentURL'), 'Source URL', limit=5000))
-    with service._lock:
+    with _write_lock(service):
         service.ensure_fresh()
         duplicate = service.graph.value(predicate=A('sha256'), object=Literal(digest))
         if duplicate:
@@ -323,12 +360,15 @@ def save_document(service: GraphService, payload: dict):
                              ('documentType', _text(payload.get('documentType'), 'Document type', True, 1000))):
             if value:
                 additions.add((document, A(field), Literal(value, datatype=XSD.anyURI if field == 'documentURL' else None)))
-        snippets = _snippets(service, payload, additions, owner, owner_types, document)
+        snippets = _snippets(service, payload, additions, owner, owner_types, document, page_count)
         archive.parent.mkdir(parents=True, exist_ok=True)
         # Write the file first, then remove it if the ontology update fails.
-        with archive.open('xb') as handle:
-            handle.write(data)
+        handle = archive.open('xb')
         try:
+            with handle:
+                handle.write(data)
+                handle.flush()
+                os.fsync(handle.fileno())
             _append(service, additions)
         except Exception:
             archive.unlink(missing_ok=True)
@@ -341,14 +381,16 @@ def save_document(service: GraphService, payload: dict):
 def add_snippets(service: GraphService, document_iri: str, payload: dict):
     """Add validated evidence to an existing source document."""
     payload = _object(payload, 'Evidence')
-    with service._lock:
+    with _write_lock(service):
         service.ensure_fresh()
         document = URIRef(_text(document_iri, 'Document', True, 1000))
-        if not service.graph.value(document, A('localPath')):
-            raise ValueError('Choose an existing corpus document.')
+        record = views.document_record(service, str(document))
+        if not record or not record['exists']:
+            raise ValueError('Choose a document with an existing archive.')
+        page_count = (_pdf_page_count(service.root / record['localPath']) if record['format'] == 'pdf' else None)
         additions = Graph()
         owner, owner_types = _owner(service, payload, additions)
-        snippets = _snippets(service, payload, additions, owner, owner_types, document)
+        snippets = _snippets(service, payload, additions, owner, owner_types, document, page_count)
         if not snippets:
             raise ValueError('Add at least one evidence snippet.')
         additions.add((owner, DCTERMS.source, document))

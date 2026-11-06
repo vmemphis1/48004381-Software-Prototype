@@ -1,4 +1,5 @@
 # Definitions of AI concepts stated by firms and regulators.
+# Scope: The rows give the recorded definitions for comparison. A source appears here only when a definition has been recorded for it.
 PREFIX :     <https://w3id.org/ai-finance-governance#>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 

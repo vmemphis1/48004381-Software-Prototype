@@ -5,18 +5,14 @@ Start it with `explorer/run.sh`, or:
 
     python3 explorer/server.py [--port 8042] [--no-open]
 
-The server reads `ontology/*.ttl`, `queries/*.rq`, and the two markdown documents
-that define the competency questions straight from the working tree, and
-re-reads them whenever they change on disk. Nothing is copied or cached, so the
-interface cannot show an answer the repository would not also give.
-
-Only the standard library and rdflib are needed -- rdflib is already in
-`scripts/requirements.txt`, so there is nothing new to install.
+The server reads the ontology, query pack, and ORSD from the working tree.
+Install the dependencies in scripts/requirements.txt before starting.
 """
 
 from __future__ import annotations
 
 import argparse
+from ipaddress import ip_address
 import json
 import mimetypes
 import re
@@ -44,25 +40,21 @@ ROOT = HERE.parent
 
 
 
-_SOURCE_FILES = sorted(HERE.rglob("*.py"))
-_SOURCE_FINGERPRINT = {path: path.stat().st_mtime for path in _SOURCE_FILES}
+def _source_fingerprint():
+    return {p: p.stat().st_mtime_ns for p in [HERE / "server.py", *(HERE / "app").rglob("*.py")]}
+
+
+_SOURCE_FINGERPRINT = _source_fingerprint()
 
 
 def stale_source_files() -> list[str]:
-    """Server modules that have changed on disk since this process started."""
-    changed = []
-    for path, loaded_mtime in _SOURCE_FINGERPRINT.items():
-        try:
-            if path.stat().st_mtime != loaded_mtime:
-                changed.append(path.relative_to(ROOT).as_posix())
-        except OSError:
-            changed.append(path.relative_to(ROOT).as_posix())
-    return sorted(changed)
+    """Identify changed, removed, or added server modules until the next restart."""
+    current = _source_fingerprint()
+    return sorted(path.relative_to(ROOT).as_posix() for path in current.keys() | _SOURCE_FINGERPRINT.keys()
+                  if current.get(path) != _SOURCE_FINGERPRINT.get(path))
+
+
 STATIC = HERE / "static"
-
-
-SERVABLE = (ROOT / "corpus", ROOT / "Sources")
-
 _RANGE = re.compile(r"bytes=(\d*)-(\d*)")
 
 service: GraphService
@@ -73,6 +65,18 @@ class Handler(BaseHTTPRequestHandler):
     protocol_version = "HTTP/1.1"
 
 
+
+    def parse_request(self) -> bool:
+        if not super().parse_request():
+            return False
+        # A browser reaching a loopback listener must have addressed it locally.
+        if ip_address(self.server.server_address[0]).is_loopback:
+            host = self.headers.get("Host", "").partition(":")[0].lower()
+            if host not in ("localhost", self.server.server_address[0]):
+                self.close_connection = True
+                self._error("Invalid Host for the local explorer.", HTTPStatus.FORBIDDEN)
+                return False
+        return True
 
     def log_message(self, fmt: str, *args: Any) -> None:
 
@@ -101,34 +105,22 @@ class Handler(BaseHTTPRequestHandler):
         parsed = urllib.parse.urlparse(self.path)
         return {k: v[0] for k, v in urllib.parse.parse_qs(parsed.query).items()}
 
-    def _body(self) -> dict[str, Any]:
-        """Read and validate a JSON request body."""
+    def _body(self, max_bytes: int) -> dict[str, Any]:
+        """Read a bounded, same-origin JSON object before processing any input."""
+        if self.headers.get_content_type() != "application/json":
+            raise ValueError("This endpoint requires JSON data.")
+        origin = self.headers.get("Origin")
+        if origin and origin != f"http://{self.headers.get('Host')}":
+            raise ValueError("Requests must come from this explorer.")
+        if self.headers.get("Transfer-Encoding") or len(self.headers.get_all("Content-Length", [])) != 1:
+            raise ValueError("A single Content-Length is required.")
         length = int(self.headers.get("Content-Length") or 0)
-        if not length:
-            return {}
-        try:
-            return json.loads(self.rfile.read(length).decode())
-        except json.JSONDecodeError:
-            return {}
-
-    def _corpus_body(self) -> dict[str, Any]:
-        """Read and validate a corpus write request."""
-        if self.headers.get_content_type() != 'application/json':
-            raise ValueError('Corpus additions require JSON data.')
-        origin = self.headers.get('Origin')
-        # A browser write with an Origin must come from the host serving the explorer.
-        if origin and urllib.parse.urlparse(origin).netloc != self.headers.get('Host'):
-            raise ValueError('Corpus additions must come from this explorer.')
-        length = int(self.headers.get('Content-Length') or 0)
-        if length <= 0 or length > corpus.MAX_BODY_BYTES:
-            self.close_connection = True
-            raise ValueError('The upload is empty or too large. Documents may be at most 25 MB.')
-        payload = json.loads(self.rfile.read(length).decode('utf-8'))
+        if not 0 < length <= max_bytes:
+            raise ValueError("The request body is empty or too large.")
+        payload = json.loads(self.rfile.read(length).decode("utf-8"))
         if not isinstance(payload, dict):
-            raise ValueError('Corpus additions require a document object.')
+            raise ValueError("Expected a JSON object.")
         return payload
-
-
 
     def _send_static(self, relative: str) -> None:
         """Serve a file from the explorer static directory."""
@@ -166,8 +158,8 @@ class Handler(BaseHTTPRequestHandler):
         if not relative:
             self._error("Missing path")
             return
-        target = (ROOT / relative).resolve()
-        if not any(target.is_relative_to(base) for base in SERVABLE):
+        target = (service.root / relative).resolve()
+        if not target.is_relative_to(service.root / "corpus"):
             self._error("Path is outside the corpus", HTTPStatus.FORBIDDEN)
             return
         if not target.is_file():
@@ -182,31 +174,30 @@ class Handler(BaseHTTPRequestHandler):
         partial = False
 
         if range_header:
-            match = _RANGE.match(range_header.strip())
-            if match:
+            match = _RANGE.fullmatch(range_header.strip())
+            if match and any(match.groups()) and all(len(n) < 21 for n in match.groups()):
                 raw_start, raw_end = match.groups()
                 if raw_start:
                     start = int(raw_start)
-                    end = int(raw_end) if raw_end else size - 1
-                elif raw_end:
-                    # A suffix range such as bytes=-500 requests the final 500 bytes.
+                    end = min(int(raw_end), end) if raw_end else end
+                else:
                     start = max(0, size - int(raw_end))
-                if start >= size:
-                    self.send_response(HTTPStatus.REQUESTED_RANGE_NOT_SATISFIABLE)
-                    self.send_header("Content-Range", f"bytes */{size}")
-                    self.send_header("Content-Length", "0")
-                    self.end_headers()
-                    return
-                end = min(end, size - 1)
-                partial = True
+                partial = start <= end and start < size
+            if not partial:
+                self.send_response(HTTPStatus.REQUESTED_RANGE_NOT_SATISFIABLE)
+                self.send_header("Content-Range", f"bytes */{size}")
+                self.send_header("Content-Length", "0")
+                self.end_headers()
+                return
 
         length = end - start + 1
         self.send_response(HTTPStatus.PARTIAL_CONTENT if partial else HTTPStatus.OK)
         self.send_header("Content-Type", content_type)
         if target.suffix.lower() in ('.html', '.htm'):
             # Archived pages may contain active content; allow viewing but not scripts.
-            self.send_header('Content-Security-Policy', "sandbox allow-same-origin; script-src 'none'; object-src 'none'; base-uri 'none'")
+            self.send_header('Content-Security-Policy', "sandbox allow-same-origin; default-src 'none'; style-src 'unsafe-inline'; img-src data:; base-uri 'none'")
         self.send_header('X-Content-Type-Options', 'nosniff')
+        self.send_header("Cache-Control", "no-store")
         self.send_header("Accept-Ranges", "bytes")
         self.send_header("Content-Length", str(length))
         if partial:
@@ -234,8 +225,10 @@ class Handler(BaseHTTPRequestHandler):
                 self._send_document()
                 return
             if path.startswith("/api/"):
-                service.ensure_fresh()
-                self._api_get(path)
+                with service._lock:
+                    service.ensure_fresh()
+                    status, payload = self._api_get(path)
+                self._send_json(payload, status)
                 return
             if path == "/":
                 self._send_static("index.html")
@@ -244,7 +237,7 @@ class Handler(BaseHTTPRequestHandler):
                 self._send_static(path[len("/static/") :])
                 return
             self._send_static(path.lstrip("/"))
-        except BrokenPipeError:
+        except (BrokenPipeError, ConnectionResetError):
             pass
         except Exception as exc:
             self._error(f"{type(exc).__name__}: {exc}", HTTPStatus.INTERNAL_SERVER_ERROR)
@@ -253,113 +246,92 @@ class Handler(BaseHTTPRequestHandler):
         """Dispatch a POST request to the appropriate handler."""
         path = urllib.parse.urlparse(self.path).path
         try:
-            service.ensure_fresh()
             if path in ('/api/corpus/documents', '/api/corpus/snippets'):
-                try:
-                    payload = self._corpus_body()
-                    if path == '/api/corpus/documents':
-                        result = corpus.save_document(service, payload)
-                    else:
-                        result = corpus.add_snippets(service, payload.get('documentIri'), payload)
-                except (ValueError, UnicodeDecodeError) as exc:
-                    self.close_connection = True
-                    self._error(str(exc))
-                    return
+                payload = self._body(corpus.MAX_BODY_BYTES)
+                if path == '/api/corpus/documents':
+                    result = corpus.save_document(service, payload)
+                else:
+                    result = corpus.add_snippets(service, payload.get('documentIri'), payload)
                 self._send_json(result, status=HTTPStatus.CREATED)
                 return
-            if path == "/api/builder-options":
-                payload = self._body()
-                self._send_json(views.builder_options(service, payload.get("sparql", "")))
-                return
-            if path == "/api/query":
-                payload = self._body()
-                sparql = (payload.get("sparql") or "").strip()
-                if not sparql:
-                    self._error("Empty query")
-                    return
-                self._send_json({"result": service.run_local(sparql).as_dict()})
+            if path in ("/api/builder-options", "/api/query"):
+                payload = self._body(1024 * 1024)
+                question = None
+                if path == "/api/query" and "questionId" in payload:
+                    question = next((item for item in load_pack() if item["id"] == payload["questionId"]), None)
+                    if question is None:
+                        self._error("This question is no longer in the query pack.", HTTPStatus.NOT_FOUND)
+                        return
+                sparql = question["sparql"] if question else payload.get("sparql")
+                if not isinstance(sparql, str) or not sparql.strip():
+                    raise ValueError("Enter a SPARQL query.")
+                with service._lock:
+                    service.ensure_fresh()
+                    result = (views.builder_options(service, sparql) if path == "/api/builder-options"
+                              else {"result": service.run_local(sparql).as_dict()})
+                if question:
+                    result["question"] = question
+                self._send_json(result)
                 return
             if path == "/api/reload":
-                service.reload(force=True)
-                self._send_json({"reloaded": True, "stats": service.stats()})
+                if self.headers.get("Origin") not in (None, f"http://{self.headers.get('Host')}"):
+                    raise ValueError("Requests must come from this explorer.")
+                if self.headers.get("Transfer-Encoding") or int(self.headers.get("Content-Length") or 0):
+                    raise ValueError("Reload takes an empty request body.")
+                with service._lock:
+                    service.reload(force=True)
+                    stats = service.stats()
+                self._send_json({"reloaded": True, "stats": stats})
                 return
             self._error(f"Unknown endpoint: {path}", HTTPStatus.NOT_FOUND)
+        except (BrokenPipeError, ConnectionResetError):
+            pass
+        except ValueError as exc:
+            self.close_connection = True
+            self._error(str(exc))
         except Exception as exc:
             self._error(f"{type(exc).__name__}: {exc}", HTTPStatus.INTERNAL_SERVER_ERROR)
 
-    def _api_get(self, path: str) -> None:
-        """Dispatch a read-only API request."""
+    def _api_get(self, path: str) -> tuple[int, dict[str, Any]]:
+        """Build a consistent response under the graph lock; send it after release."""
         params = self._query_params()
-
-        if path == '/api/corpus/options':
-            self._send_json(corpus.corpus_options(service))
-            return
-
+        if path == "/api/corpus/options":
+            return 200, corpus.corpus_options(service)
         if path == "/api/status":
             pack = load_pack()
-            self._send_json(
-                {
-                    "stats": service.stats(),
-                    "queryCount": len(pack),
-                    "integrity": orsd_coverage_problems(pack),
-                    "root": str(ROOT),
-                    "staleSource": stale_source_files(),
-                }
-            )
-            return
-
+            return 200, {
+                "stats": service.stats(), "queryCount": len(pack),
+                "integrity": orsd_coverage_problems(pack), "root": str(service.root),
+                "staleSource": stale_source_files(),
+            }
         if path == "/api/questions":
-            self._send_json({"questions": load_pack()})
-            return
-
+            return 200, {"questions": load_pack()}
         if path == "/api/schema":
-            classes = sorted(service.classes.values(), key=lambda c: c["label"])
-            properties = sorted(service.properties.values(), key=lambda p: p["label"])
-            self._send_json({"classes": classes, "properties": properties})
-            return
-
+            return 200, {
+                "classes": sorted(service.classes.values(), key=lambda c: c["label"]),
+                "properties": sorted(service.properties.values(), key=lambda p: p["label"]),
+            }
         if path == "/api/resource":
-            iri = params.get("iri")
-            if not iri:
-                self._error("Missing iri")
-                return
-            self._send_json(views.resource(service, iri))
-            return
-
+            if not params.get("iri"):
+                return 400, {"error": "Missing iri"}
+            return 200, views.resource(service, params["iri"])
         if path == "/api/evidence":
             iri = params.get("iri")
-            if iri:
-                self._send_json({"evidence": views.evidence_for(service, iri)})
-            else:
-                self._send_json({"evidence": views.all_evidence(service)})
-            return
-
+            return 200, {"evidence": views.evidence_for(service, iri) if iri else views.all_evidence(service)}
         if path == "/api/graph":
-            self._send_json(
-                views.graph_view(
-                    service,
-                    mode=params.get("mode", "instances"),
-                    focus=params.get("focus"),
-                    depth=int(params.get("depth", "1") or 1),
-                )
-            )
-            return
-
+            try:
+                depth = int(params.get("depth", "1"))
+            except ValueError:
+                return 400, {"error": "Graph depth must be an integer."}
+            return 200, views.graph_view(service, params.get("mode", "instances"), params.get("focus"), depth)
         if path == "/api/indexes":
-            self._send_json(
-                {
-                    "evidence": views.evidence_index(service),
-                    "indirect": views.indirect_evidence_index(service),
-                    "labels": views.label_index(service),
-                }
-            )
-            return
-
+            return 200, {
+                "evidence": views.evidence_index(service), "indirect": views.indirect_evidence_index(service),
+                "labels": views.label_index(service),
+            }
         if path == "/api/documents":
-            self._send_json({"documents": views.documents(service)})
-            return
-
-        self._error(f"Unknown endpoint: {path}", HTTPStatus.NOT_FOUND)
+            return 200, {"documents": views.documents(service)}
+        return 404, {"error": f"Unknown endpoint: {path}"}
 
 
 def main() -> int:
@@ -377,7 +349,7 @@ def main() -> int:
     stats = service.stats()["project"]
 
     httpd = ThreadingHTTPServer((args.host, args.port), Handler)
-    url = f"http://{args.host}:{args.port}/"
+    url = f"http://{args.host}:{httpd.server_port}/"
 
     print("AI Finance Governance Explorer")
     print(

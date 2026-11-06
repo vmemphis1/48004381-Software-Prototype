@@ -1,5 +1,4 @@
 export const state = {
-  questions: [],
   activeQuestionId: null,
   builder: null,
   builderMode: 'guided',

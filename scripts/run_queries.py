@@ -11,19 +11,10 @@ import argparse
 import sys
 from pathlib import Path
 
-from rdflib import Graph
-
 ROOT = Path(__file__).resolve().parents[1]
-ONTOLOGY = ROOT / "ontology" / "ai-finance-governance.ttl"
-AIRO = ROOT / "ontology" / "airo.ttl"
 QUERY_DIR = ROOT / "queries"
-
-def load_graph() -> Graph:
-    """Load the project ontology and AIRO into one RDF graph."""
-    graph = Graph()
-    graph.parse(ONTOLOGY, format="turtle")
-    graph.parse(AIRO, format="turtle")
-    return graph
+sys.path.insert(0, str(ROOT / "explorer"))
+from app.graph_service import GraphService
 
 
 def format_table(rows: list[tuple[str, ...]], headers: list[str]) -> str:
@@ -55,13 +46,16 @@ def expects_empty(query: str) -> bool:
     )
 
 
-def run(graph: Graph, path: Path) -> tuple[int, bool]:
+def run(service: GraphService, path: Path) -> tuple[int, bool]:
     """Execute a query file, print its results, and report whether emptiness is expected."""
     query = path.read_text()
-    result = graph.query(query)
-    headers = [str(variable) for variable in result.vars]
-    results = list(result)
-    rows = [tuple(shorten(value) for value in row) for row in results]
+    result = service.run_local(query)
+    if not result.ok:
+        raise ValueError(result.error)
+    headers = result.columns
+    rows = [tuple(shorten(cell["value"]) if cell else "" for cell in row) for row in result.rows]
+    if result.boolean is not None:
+        headers, rows = ["answer"], [(str(result.boolean).lower(),)]
 
     print(f"\n=== {path.name} ({len(rows)} rows) ===")
     for comment in query.splitlines():
@@ -99,13 +93,19 @@ def main() -> int:
             path for path in QUERY_DIR.glob("*.rq") if not path.name.startswith("_")
         )
 
-    graph = load_graph()
-    print(f"Loaded {len(graph)} triples from ontology/ and airo.ttl")
+    service = GraphService()
+    print(f"Loaded {len(service.graph)} triples from ontology/ and airo.ttl")
 
+    failed = []
     unexpected_empty = []
     expected_empty = []
     for path in paths:
-        count, tolerated = run(graph, path)
+        try:
+            count, tolerated = run(service, path)
+        except ValueError as exc:
+            print(f"FAIL {path.name}: {exc}", file=sys.stderr)
+            failed.append(path)
+            continue
         if count == 0:
             (expected_empty if tolerated else unexpected_empty).append(path.name)
 
@@ -119,6 +119,8 @@ def main() -> int:
             f"\nFAIL: {len(unexpected_empty)} query unexpectedly returned no rows: "
             f"{', '.join(unexpected_empty)}"
         )
+        return 1
+    if failed:
         return 1
     print(f"\nPASS: all {len(paths)} queries behaved as expected (rdflib)")
     return 0

@@ -1,8 +1,10 @@
 import { el, qs, clear, toast } from './dom.js';
+import { quoteRanges } from './quote-match.js';
 import { docUrl } from './api.js';
 
 let pdfjs = null;
 let doc = null;
+let loadingTask = null;
 let currentDoc = null;
 let pageNumber = 1;
 let scale = 1.25;
@@ -25,9 +27,11 @@ async function ensurePdfjs() {
 
 /** Close the current document preview. */
 export function closeViewer() {
+  ++renderToken;
   view().hidden = true;
   clear(stage());
-  doc?.destroy?.();
+  loadingTask?.destroy();
+  loadingTask = null;
   doc = null;
   currentDoc = null;
   pendingQuote = null;
@@ -35,6 +39,7 @@ export function closeViewer() {
 
 /** Open an archived document at its referenced page and quote. */
 export async function openDocument(document_, { page, quote, caption } = {}) {
+  closeViewer();
   currentDoc = document_;
   pendingQuote = quote || null;
   pageNumber = page || 1;
@@ -61,6 +66,7 @@ export async function openDocument(document_, { page, quote, caption } = {}) {
   clear(stage()).append(el('div', { class: 'viewer-loading' },
     el('span', { class: 'spinner' }), ' Opening archived copy…'));
 
+  for (const id of ['#viewer-pager', '#viewer-zoom-in', '#viewer-zoom-out']) qs(id).hidden = true;
   if (document_.format === 'pdf') {
     await openPdf(document_);
   } else {
@@ -76,11 +82,17 @@ async function openPdf(document_) {
     const lib = await ensurePdfjs();
 
 
-    const task = lib.getDocument({ url: docUrl(document_.localPath) });
-    const loaded = await task.promise;
-    if (token !== renderToken) { loaded.destroy(); return; }
+    if (token !== renderToken) return;
+    const assets = '/static/vendor/';
+    loadingTask = lib.getDocument({ url: docUrl(document_.localPath),
+      cMapUrl: assets + 'cmaps/', standardFontDataUrl: assets + 'standard_fonts/',
+      wasmUrl: assets + 'wasm/', iccUrl: assets + 'iccs/',
+    });
+    const loaded = await loadingTask.promise;
+    if (token !== renderToken) return;
     doc = loaded;
   } catch (error) {
+    if (token !== renderToken) return;
     clear(stage()).append(el('div', { class: 'banner danger' },
       `Could not open the PDF: ${error.message}`));
     return;
@@ -98,12 +110,21 @@ async function openPdf(document_) {
 async function renderPage() {
   if (!doc) return;
   const token = ++renderToken;
+  try {
+    await drawPage(token);
+  } catch (error) {
+    if (token === renderToken) clear(stage()).append(el('div', { class: 'banner danger' },
+      `Could not render page ${pageNumber}: ${error.message}`));
+  }
+}
+
+async function drawPage(token) {
   qs('#page-num').value = String(pageNumber);
 
   const page = await doc.getPage(pageNumber);
   if (token !== renderToken) return;
 
-  const viewport = page.getViewport({ scale: scale * (window.devicePixelRatio > 1 ? 1 : 1) });
+  const viewport = page.getViewport({ scale });
   const ratio = window.devicePixelRatio || 1;
 
   const canvas = el('canvas');
@@ -116,21 +137,12 @@ async function renderPage() {
   textLayer.style.width = `${Math.floor(viewport.width)}px`;
   textLayer.style.height = `${Math.floor(viewport.height)}px`;
 
-  textLayer.style.setProperty('--scale-factor', String(scale));
+  textLayer.style.setProperty('--total-scale-factor', String(scale * page.userUnit));
 
   const wrap = el('div', { class: 'pdf-page' }, canvas, textLayer);
   clear(stage()).append(wrap);
 
-  const context = canvas.getContext('2d');
-  context.scale(ratio, ratio);
-  try {
-    await page.render({ canvasContext: context, viewport }).promise;
-  } catch (error) {
-
-
-    if (error?.name === 'RenderingCancelledException') return;
-    throw error;
-  }
+  await page.render({ canvas, viewport, transform: [ratio, 0, 0, ratio, 0, 0] }).promise;
   if (token !== renderToken) return;
 
   try {
@@ -157,89 +169,13 @@ async function renderPage() {
   }
 }
 
-/** Normalize text for matching evidence quotations. */
-function normalise(text) {
-  return text
-    .replace(/[‘’ʼ]/g, "'")
-    .replace(/[“”]/g, '"')
-    .replace(/[‐-―−]/g, '-')
-    .replace(/ﬁ/g, 'fi').replace(/ﬂ/g, 'fl')
-    .replace(/ /g, ' ')
-    .toLowerCase();
-}
-
-/** Split an evidence quote into matchable text runs. */
-function quoteRuns(quote) {
-  return quote
-    .split(/\.\.\.|…/)
-    .map((part) => part.replace(/^[\s;:,]+|[\s;:,]+$/g, ''))
-    .filter(Boolean);
-}
-
-/** Highlight a quote within rendered PDF text. */
 function highlight(container, quote) {
-  const spans = [...container.querySelectorAll('span')];
-  if (!spans.length) return false;
-
-  let joined = '';
-  const owner = [];
-  let compact = '';
-  const compactOwner = [];
-  let lastWasSpace = true;
-  // Keep a character-to-span map so a match across PDF text spans can be highlighted.
-  // The compact form also handles PDFs whose text layer inserts extra whitespace.
-  spans.forEach((span, index) => {
-    for (const character of `${normalise(span.textContent)} `) {
-      if (/\s/.test(character)) {
-        if (lastWasSpace) continue;
-        joined += ' '; owner.push(index); lastWasSpace = true;
-      } else {
-        joined += character; owner.push(index); lastWasSpace = false;
-        compact += character; compactOwner.push(index);
-      }
-    }
-  });
-
-  /** Find the text spans covering a quote run. */
-  const locate = (run) => {
-    const at = joined.indexOf(run);
-    if (at !== -1) return new Set(owner.slice(at, at + run.length));
-    const squeezed = run.replace(/\s+/g, '');
-    const compactAt = compact.indexOf(squeezed);
-    if (compactAt !== -1) {
-      return new Set(compactOwner.slice(compactAt, compactAt + squeezed.length));
-    }
-    return null;
-  };
-
-  const target = normalise(quote).replace(/\s+/g, ' ').trim();
-  const runs = quoteRuns(target);
-
-  if (runs.length > 1) {
-    // Ellipses denote separate excerpts, so highlight each run that can be found.
-    const marked = runs.map(locate).filter(Boolean);
-    if (!marked.length) return false;
-    marked.forEach((hit) => hit.forEach((index) => spans[index].classList.add('hit')));
-    const first = Math.min(...marked.flatMap((hit) => [...hit]));
-    spans[first].scrollIntoView({ block: 'center', behavior: 'smooth' });
-    return true;
-  }
-
-  const attempts = [target];
-  const words = target.split(' ');
-  // If the entire quote is not contiguous, try progressively shorter leading phrases.
-  for (const count of [14, 10, 7, 5]) {
-    if (words.length > count) attempts.push(words.slice(0, count).join(' '));
-  }
-
-  for (const attempt of attempts) {
-    const hit = locate(attempt);
-    if (!hit) continue;
-    hit.forEach((index) => spans[index].classList.add('hit'));
-    spans[Math.min(...hit)].scrollIntoView({ block: 'center', behavior: 'smooth' });
-    return true;
-  }
-  return false;
+  const spans = [...container.querySelectorAll('span[role="presentation"]')];
+  const ranges = quoteRanges(spans.map(span => span.textContent
+    + (span.nextElementSibling?.tagName === 'BR' ? '\n' : '')), quote);
+  for (const { index } of ranges) spans[index].classList.add('hit');
+  if (ranges.length) spans[ranges[0].index].scrollIntoView({ block: 'center' });
+  return ranges.length > 0;
 }
 
 /** Open an archived HTML document in the preview. */
@@ -257,7 +193,7 @@ function openHtml(document_, quote) {
   clear(stage()).append(frame);
 
   frame.addEventListener('load', () => {
-    if (!quote) return;
+    if (!quote || !frame.isConnected) return;
     try {
       const inner = frame.contentDocument;
       if (!inner) return;
@@ -275,32 +211,32 @@ function openHtml(document_, quote) {
 
 /** Highlight a quote in an archived HTML document. */
 function markInDocument(inner, quote) {
-  const target = normalise(quote).replace(/\s+/g, ' ').trim().slice(0, 90);
   const walker = inner.createTreeWalker(inner.body, NodeFilter.SHOW_TEXT);
-  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
-    const at = normalise(node.textContent).replace(/\s+/g, ' ').indexOf(target.slice(0, 40));
-    if (at === -1) continue;
-    const mark = inner.createElement('mark');
-    mark.className = 'afg-hit';
-    const range = inner.createRange();
-    range.setStart(node, Math.max(0, at));
-    range.setEnd(node, Math.min(node.textContent.length, at + target.length));
-    try {
-      range.surroundContents(mark);
-      mark.scrollIntoView({ block: 'center' });
-      return true;
-    } catch {
-      node.parentElement?.scrollIntoView({ block: 'center' });
-      return true;
-    }
+  const nodes = [];
+  while (walker.nextNode()) {
+    const node = walker.currentNode;
+    if (!node.parentElement?.closest('script,style,noscript,template,[hidden],ix\\:hidden')
+        && node.textContent.trim()) nodes.push(node);
   }
-  return false;
+  const ranges = quoteRanges(nodes.map(node => node.textContent), quote);
+  let first;
+  // Split from the end so earlier offsets in the same text node remain valid.
+  for (const { index, start, end } of ranges.reverse()) {
+    const range = inner.createRange();
+    range.setStart(nodes[index], start);
+    range.setEnd(nodes[index], end);
+    first = inner.createElement('mark');
+    first.className = 'afg-hit';
+    range.surroundContents(first);
+  }
+  first?.scrollIntoView({ block: 'center' });
+  return Boolean(first);
 }
 
 /** Navigate to a PDF page. */
 function goTo(next) {
   if (!doc) return;
-  pageNumber = Math.min(Math.max(1, next), doc.numPages);
+  pageNumber = Math.min(Math.max(1, Number.isFinite(next) ? Math.trunc(next) : pageNumber), doc.numPages);
   pendingQuote = null;
   renderPage();
 }
@@ -314,7 +250,7 @@ qs('#viewer-zoom-out').addEventListener('click', () => { scale = Math.max(0.5, s
 
 document.addEventListener('keydown', (event) => {
   if (view().hidden) return;
-  if (event.key === 'Escape') closeViewer();
+  if (event.key === 'Escape') { event.stopImmediatePropagation(); closeViewer(); return; }
   if (event.target.tagName === 'INPUT') return;
   if (event.key === 'ArrowRight' || event.key === 'PageDown') goTo(pageNumber + 1);
   if (event.key === 'ArrowLeft' || event.key === 'PageUp') goTo(pageNumber - 1);

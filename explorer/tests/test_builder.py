@@ -54,9 +54,12 @@ class BuilderTests(unittest.TestCase):
     def test_firms_do_not_offer_unrecorded_direct_evidence(self):
         """Check that firms do not offer unrecorded direct evidence."""
         choices = self.options(plan())
-        self.assertEqual(choices['count'], 7)
+        expected = self.service.run_local('SELECT DISTINCT ?f WHERE { ?f rdf:type/rdfs:subClassOf* :FinancialInstitution }')
+        self.assertTrue(expected.ok, expected.error)
+        self.assertEqual(choices['count'], expected.count)
         props = {o['property'] for o in choices['nodes']['record']['relationships']}
-        self.assertNotIn(AFG + 'hasEvidence', props)
+        direct = self.service.run_local('ASK { ?f rdf:type/rdfs:subClassOf* :FinancialInstitution ; :hasEvidence ?s }')
+        self.assertEqual(AFG + 'hasEvidence' in props, direct.boolean)
         self.assertIn(AFG + 'hasGovernancePolicy', props)
 
     def test_every_offered_choice_has_the_advertised_matches(self):
@@ -110,6 +113,41 @@ class BuilderTests(unittest.TestCase):
             self.assertEqual(result.rows[0][1]['value'], value)
             self.assertEqual(built['values'][0]['var'], 'field42')
             self.service.graph.remove((subject, prop, None))
+
+    def test_graph_results_and_unbound_solutions(self):
+        for sparql in ('DESCRIBE <urn:subject> WHERE {}',
+                       'CONSTRUCT { <urn:s> <urn:p> "value" } WHERE {}'):
+            result = self.service.run_local(sparql)
+            self.assertTrue(result.ok, result.error)
+            self.assertEqual(result.columns, ['subject', 'predicate', 'object'])
+        describe = self.service.run_local(f'DESCRIBE <{AFG}HSBC>')
+        self.assertGreater(describe.count, 0)
+        self.assertTrue(all(len(row) == 3 for row in describe.rows))
+        self.assertEqual(self.service.run_local('SELECT ?missing WHERE {}').rows, [[None]])
+
+    def test_external_sparql_clauses_are_rejected_before_evaluation(self):
+        for query in ('ASK { SERVICE <urn:remote> { ?s ?p ?o } }',
+                      'ASK { FILTER EXISTS { SERVICE SILENT <urn:remote> { ?s ?p ?o } } }',
+                      'SELECT * FROM NAMED <urn:remote> WHERE { ?s ?p ?o }'):
+            result = self.service.run_local(query)
+            self.assertFalse(result.ok)
+            self.assertIn('local graph', result.error)
+        self.assertTrue(self.service.run_local('SELECT ("SERVICE and FROM" AS ?text) WHERE {}').ok)
+
+    def test_viewer_requires_all_quote_fragments_in_order(self):
+        script = """
+import assert from 'node:assert/strict';
+import {quoteRanges} from './explorer/static/js/quote-match.js';
+const parts = ['The bank tests its AI models ', 'before use.'];
+assert.deepEqual(quoteRanges(parts, '…'), []);
+assert.deepEqual(quoteRanges(parts, 'The bank tests its AI models before use and guarantees fairness'), []);
+assert.deepEqual(quoteRanges(parts, 'before use ... the bank'), []);
+assert.deepEqual(quoteRanges(parts, 'models … use'), [
+  {index: 0, start: 22, end: 28}, {index: 1, start: 7, end: 10},
+]);
+assert.deepEqual(quoteRanges(['The  ﬁrm'], 'firm'), [{index: 0, start: 5, end: 8}]);
+"""
+        subprocess.run(['node', '--input-type=module', '-e', script], cwd=EXPLORER.parent, check=True)
 
     def test_invalid_query_is_an_error_not_empty_choices(self):
         """Check that invalid query is an error not empty choices."""

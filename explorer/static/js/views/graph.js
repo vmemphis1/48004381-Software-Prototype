@@ -1,8 +1,6 @@
 import { el, clear, toast, loading } from '../dom.js';
 import { api } from '../api.js';
-import { state } from '../state.js';
 import { openInspector } from '../inspector.js';
-import { iriForLabel } from '../cells.js';
 
 let cy = null;
 let cytoscapeLib = null;
@@ -33,6 +31,11 @@ async function ensureCytoscape() {
   });
   cytoscapeLib = window.cytoscape;
   return cytoscapeLib;
+}
+
+export function dispose() {
+  cy?.destroy();
+  cy = null;
 }
 
 /** Render the interactive graph explorer. */
@@ -114,10 +117,12 @@ export async function render(container, params = {}) {
     return;
   }
 
+  if (!canvas.isConnected) return;
   await draw(canvas, payload, canvasWrap);
+  if (!canvas.isConnected) return;
 
   if (params.q) await highlightQuestion(params.q);
-  if (params.focus) {
+  if (params.focus && canvas.isConnected) {
     const node = cy.$id(params.focus);
     if (node.length) { node.addClass('pinned'); cy.center(node); }
   }
@@ -126,6 +131,7 @@ export async function render(container, params = {}) {
 /** Draw the selected graph using Cytoscape. */
 async function draw(canvas, payload, canvasWrap) {
   const cytoscape = await ensureCytoscape();
+  if (!canvas.isConnected) return;
   clear(canvas);
   typeColour.clear();
 
@@ -223,6 +229,7 @@ async function draw(canvas, payload, canvasWrap) {
 
   canvasWrap.querySelector('.graph-legend')?.remove();
   canvasWrap.append(legend(counts));
+  applyTypeFilter();
 }
 
 /** Choose layout settings for the current graph. */
@@ -306,20 +313,24 @@ function filterByText(text) {
 
 /** Highlight the resources returned by a question. */
 async function highlightQuestion(questionId) {
-  const question = state.questions.find((q) => q.id === questionId);
-  if (!question) return;
+  const graph = cy;
   let payload;
   try {
-    payload = await api.query(question.sparql);
-  } catch { return; }
-
+    payload = await api.runQuestion(questionId);
+  } catch (error) {
+    if (graph === cy) toast(error.message);
+    return;
+  }
+  if (graph !== cy) return;
+  const question = payload.question;
+  if (!payload.result.ok) { toast(payload.result.error); return; }
   const iris = new Set();
   for (const row of payload.result.rows) {
     for (const cell of row) {
       if (!cell) continue;
       if (cell.type === 'uri') iris.add(cell.value);
       else {
-        const resolved = iriForLabel(cell.value);
+        const resolved = cell.resolvedIri;
         if (resolved) iris.add(resolved);
       }
     }

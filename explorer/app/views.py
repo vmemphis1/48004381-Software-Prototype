@@ -51,15 +51,16 @@ def document_record(service: GraphService, iri: str) -> dict[str, Any] | None:
     if local_path is None:
         return None
     relative = str(local_path)
-    absolute = service.root / relative
+    absolute = (service.root / relative).resolve()
+    archived = absolute.is_relative_to(service.root / "corpus") and absolute.is_file()
     suffix = absolute.suffix.lower()
     return {
         "iri": iri,
         "curie": curie(iri),
         "label": service.labels.get(iri, curie(iri)),
         "localPath": relative,
-        "exists": absolute.exists(),
-        "sizeBytes": absolute.stat().st_size if absolute.exists() else None,
+        "exists": archived,
+        "sizeBytes": absolute.stat().st_size if archived else None,
         "format": "pdf" if suffix == ".pdf" else ("html" if suffix in (".html", ".htm") else suffix.lstrip(".")),
         "documentURL": _one(service, node, A("documentURL")),
         "documentType": _one(service, node, A("documentType")),
@@ -206,7 +207,8 @@ def resource(service: GraphService, iri: str) -> dict[str, Any]:
         "evidence": evidence_for(service, iri),
         "relatedEvidence": related_evidence(service, iri),
         "document": document_record(service, iri),
-        "tripleCount": len(outgoing) + len(incoming),
+        "tripleCount": len(set(service.graph.triples((node, None, None)))
+                           | set(service.graph.triples((None, None, node)))),
     }
 
 
@@ -294,6 +296,7 @@ def graph_view(
         return {"mode": mode, "nodes": list(nodes.values()), "edges": edges}
 
     if mode == "focus" and focus:
+        visited = set()
         frontier = {focus}
         add_node(focus)
         for _ in range(max(1, min(depth, 3))):
@@ -312,7 +315,8 @@ def graph_view(
                     add_node(str(subject))
                     add_edge(str(subject), str(predicate), iri)
                     next_frontier.add(str(subject))
-            frontier = next_frontier - set()
+            visited.update(frontier)
+            frontier = next_frontier - visited
         return {"mode": mode, "focus": focus, "nodes": list(nodes.values()), "edges": edges}
 
     for individual in set(service.graph.subjects(RDF.type, OWL.NamedIndividual)):
@@ -395,18 +399,8 @@ def related_evidence(service: GraphService, iri: str) -> list[dict[str, Any]]:
 
 
 def label_index(service: GraphService) -> dict[str, str]:
-    """Unique `rdfs:label` -> IRI, so a label literal can be clicked through.
-
-    Most competency queries project `?firmLabel` rather than `?firm`, which is
-    what `queries/README.md` means when it says a query returning only labels is
-    not directly clickable. Resolving unambiguous labels back to their resource
-    restores the drill-down without editing the query pack the thesis cites.
-    Labels shared by more than one resource are dropped rather than guessed at.
-    """
-    counts: dict[str, list[str]] = {}
-    for iri, label in service.labels.items():
-        counts.setdefault(label, []).append(iri)
-    return {label: iris[0] for label, iris in counts.items() if len(iris) == 1}
+    """Unambiguous label lookups from the currently loaded graph."""
+    return service.unique_labels
 
 
 def builder_options(service: GraphService, sparql: str) -> dict[str, Any]:
@@ -427,7 +421,7 @@ def builder_options(service: GraphService, sparql: str) -> dict[str, Any]:
         subjects: dict[str, set[str]] = {}
         for row in result.rows:
             cell = row[column]
-            if cell and cell["type"] == "uri":
+            if row[0] and cell and cell["type"] == "uri":
                 subjects.setdefault(cell["value"], set()).add(row[0]["value"])
         if not subjects:
             continue
