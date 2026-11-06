@@ -38,8 +38,8 @@ The domain is AI governance in financial services, with emphasis on AI safety, c
 - Academic reviewers interested in AI governance, regulatory technology, and knowledge graphs.
 - Financial-sector compliance analysts who need to compare terminology across firms and frameworks.
 - Software agents or query tools that need a formal vocabulary for AI governance concepts.
-- Citizens who would like to inspect a financial firms AI policies before making an account with them.
-- Regulators who wish to familiriase thenselves with the vocabulary firms and other regulators are using.
+- Citizens who would like to inspect a financial firm's AI policies before opening an account.
+- Regulators who wish to familiarise themselves with the vocabulary firms and other regulators use.
 
 ## 4. Intended Uses
 
@@ -73,10 +73,12 @@ The ontology uses `https://w3id.org/ai-finance-governance#` as its base IRI.
 
 - EU AI Act, Regulation (EU) 2024/1689.
 - Australia's AI Ethics Principles, Department of Industry, Science and Resources.
-- NIST AI Risk Management Framework 1.0.
+- NIST AI Risk Management Framework 1.0 and its Generative AI Profile.
 - APRA CPG 234 Information Security.
-- ASIC RG 271 Internal Dispute Resolution, where relevant to AI-assisted decisions.
-- MAS AI Risk Management Guidelines.
+- ASIC RG 271 Internal Dispute Resolution and ASIC REP 798, where relevant to AI governance.
+- OAIC guidance on commercial AI and privacy.
+- Australian guidance for AI adoption.
+- MAS's proposed AI Risk Management Guidelines and the archived 20 March 2026 release on the AI risk toolkit. The release records consultation responses under review; it does not establish the guidelines' later status.
 - ISO/IEC 42001:2023 AI management systems.
 - ISO/IEC 23894:2023 AI risk management.
 - FSB work on financial stability implications of AI.
@@ -207,19 +209,22 @@ The ontology and populated knowledge graph must be able to answer the following 
 
 ## 11. Conceptual Coverage
 
-The populated ontology includes:
+The populated ontology includes the following:
 
-- Regulatory frameworks: APRA CPG 234, ASIC RG 271, EU AI Act, NIST AI RMF, MAS AIRM, ISO/IEC 42001, ISO/IEC 23894, and Australia's AI Ethics Principles.
+- Regulatory and reference frameworks: APRA CPG 234, ASIC RG 271 and REP 798, the EU AI Act, NIST AI RMF and its Generative AI Profile, the proposed MAS AI Risk Management Guidelines, ISO/IEC 42001, ISO/IEC 23894, Australia's AI Ethics Principles and AI Adoption Guidance, OAIC AI privacy guidance, and the FSB's 2024 and 2025 AI reports.
 - Financial institutions: CBA, NAB, Westpac, ANZ, JPMorgan Chase, Goldman Sachs, and HSBC, each linked to at least one collected governance disclosure.
 - Core governance concepts including AI governance policy, AI governance framework, firm AI governance disclosure, model risk, AI governance body, model validation, explainability obligation, third-party AI governance, AI deployment approval process, risk tier, and high-risk AI system.
 - Object properties for governance policies, framework references, governance bodies, regulatory applicability, approval processes, and risk classification.
 - Datatype properties for jurisdiction, policy URL, source document, extracted term, local path, retrieval date, and SHA-256 checksum.
 - Local regulatory and firm source documents with checksums, page- or section-level evidence snippets, and evidence-backed terminology usages.
 - Evidence-backed governance bodies for CBA, Goldman Sachs, HSBC, and JPMorgan Chase, and evidence-backed approval/review processes for ANZ, HSBC, and JPMorgan Chase.
+- Evidence-backed governance statements with a topic, summary and source status. Topics such as contestability are recorded as text on statements, rather than necessarily as distinct ontology classes; a statement's status describes the source's evidential role and does not establish implementation or compliance.
 
 ## 12. Glossary Requirements
 
-The glossary must contain, at minimum:
+The glossary is a human-readable, source-traceable guide to selected AI governance terms and their representation in the ontology. It supports interpretation of terminology differences and the knowledge graph; it is not an exhaustive inventory of every class, property or individual. Its definitions are explanatory and do not on their own assert equivalence between sources.
+
+The glossary must contain, at minimum, the following fields for each entry where the information is available:
 
 - Preferred term.
 - Definition.
@@ -228,6 +233,8 @@ The glossary must contain, at minimum:
 - Synonyms or alternative terms.
 - Mapping to the ontology or an imported ontology.
 - Notes on terminology divergence or unresolved scope questions.
+
+`Ontology mapping` records full IRIs for mapped project or imported ontology resources, separated by semicolons when there is more than one. 
 
 ## 13. Data and Population Requirements
 
@@ -282,6 +289,7 @@ The ontology work package will produce:
 | Imported ontologies may be large or difficult to load. | Tool performance or import resolution may suffer. | Resolved in version 1.2: FIBO is mapped rather than imported, removing a 75 MB dependency used for one class. AIRO is small enough to import directly. |
 | Terminology mappings may be ambiguous. | Incorrect equivalence claims could weaken the analysis. | Prefer `skos:altLabel` or explanatory mappings unless definitional equivalence is well supported. |
 | Ontology scope may expand too far. | Thesis timeline may be affected. | Keep all additions traceable to competency questions. |
+
 ## 18. Change Control
 
 Changes to the ontology should be made only when they support at least one of the following:
