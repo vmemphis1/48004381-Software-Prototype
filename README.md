@@ -1,30 +1,68 @@
-# Explorer
-## Dependencies and setup
+# AI Finance Governance Explorer
 
-The prototype needs Python 3.10 or later and a modern web browser. Its Python dependencies
-are listed in `scripts/requirements.txt`.
+A thesis prototype for comparing how financial institutions and regulators talk about AI governance. It turns public disclosures and regulatory documents into a searchable knowledge graph. In the browser, you can ask a question about model risk, explainability or AI oversight, inspect the matching records, and open the archived source at the cited passage.
 
-From a terminal in the repository root, create a virtual environment and install
-the Python dependencies:
+## Why this was built
+
+Banks and regulators can use different terms for similar practices, or use the same term with different meanings. That makes it hard to compare disclosures across institutions and jurisdictions. The project's **ontology** defines a shared vocabulary for institutions, frameworks and governance practices. Its **knowledge graph** applies that vocabulary to the collected documents and preserves the original wording, page or section reference, and links back to the source.
+
+The prototype covers **7 financial institutions**, **32 archived source documents** and **94 evidence excerpts**. It includes CBA, NAB, Westpac, ANZ, JPMorgan Chase, Goldman Sachs and HSBC, alongside sources such as the EU AI Act, NIST AI Risk Management Framework and Australia's AI Ethics Principles. Results reflect what the collected sources document. A gap in the results means the corpus has yet to verify that item.
+
+## A question you can trace to its source
+
+1. In **Explore**, run **CQ5**, which asks which firms describe a review or approval process before deploying an AI system. The ten competency questions are the research questions the graph was designed to answer.
+2. In the results, open the 2025 **JPMorgan model review before use** record. The inspector shows the linked quotation and its citation. The record preserves the report's qualification that exceptions to pre-use review may be granted.
+3. Select **Open at page 185** to see the highlighted passage in the archived annual report and read it in context.
+
+![Explore results for CQ5 beside the JPMorgan record and its cited evidence](docs/screenshots/query-evidence.png)
+
+![Archived JPMorgan annual report on PDF page 185, with the cited passage highlighted](docs/screenshots/source-preview.png)
+
+## What you can do in the explorer
+
+- **Explore** runs the ten competency questions and supporting queries for tasks such as comparing terminology or finding gaps in the corpus. It also lists saved queries from Build.
+- **Build** lets you assemble a question from record types, relationships and values present in the graph. It previews how many records match as you go. You can run, copy or bookmark the resulting SPARQL query, or write one in the advanced editor.
+- **Graph** visualises the populated records, the class hierarchy or the immediate neighbours of a selected record. Select a node to inspect it, or open **See in graph** from a predefined query to highlight its returned resources.
+- **Schema** shows the ontology's classes and properties, including their definitions and relationships.
+- **Corpus** shows the archived sources and what was extracted from each. You can add a PDF or UTF-8 HTML file up to 25 MB, record quotations with source references, and link them to existing or new graph records. New evidence starts pending review.
+
+The guided builder can also recreate the approval-process question. Start with **Financial firms**, follow **has approval process**, and select **AI Deployment Approval Process** as the linked record type. The builder generates SPARQL, a query language for linked data, from those selections.
+
+![Guided query builder following the approval-process relationship from financial firms](docs/screenshots/guided-builder.png)
+
+The focused graph view shows how the JPMorgan approval record connects to the institution and the evidence excerpt.
+
+![Focused graph view of the JPMorgan model review record and its linked resources](docs/screenshots/graph-neighbourhood.png)
+
+## Run locally
+
+Use Python 3.10 or later, a modern browser and a Bash-compatible shell.
 
 ```bash
+git clone https://github.com/vmemphis1/48004381-Software-Prototype.git
+cd 48004381-Software-Prototype
 python3 -m venv .venv
 source .venv/bin/activate
 python3 -m pip install -r scripts/requirements.txt
-```
-
-## Run the prototype
-
-With the virtual environment active, run:
-
-```bash
 explorer/run.sh
 ```
 
-The server opens the explorer at <http://127.0.0.1:8042/>.
-To choose another port, use `explorer/run.sh --port 8043`, for example.
+Open <http://127.0.0.1:8042/> if the browser doesn't open automatically. To use a different port, run `explorer/run.sh --port 8043`.
 
-To repeat the repository checks, install Node.js 22.7 or later for the browser-module tests, then run
+## How the repository fits together
+
+| Component | What it contains |
+| --- | --- |
+| [Ontology requirements](ontology/ORSD.md) | The research scope, modelling decisions and ten competency questions |
+| [OWL/Turtle ontology](ontology/ai-finance-governance.ttl) | The vocabulary and populated graph, with [AIRO](ontology/airo.ttl) included locally for AI risk concepts and a mapping to FIBO's Financial Institution class |
+| [Glossary](glossary/terms_v1.csv) | Selected terms, definitions, source references and ontology mappings |
+| [Source corpus](corpus/) | Archived firm disclosures and regulatory or standards documents |
+| [SPARQL query pack](queries/) | The ten competency queries and eleven supporting queries |
+| [Explorer](explorer/) | A local Python server using RDFLib, with a JavaScript interface, Cytoscape graph visualisation and a PDF.js viewer |
+
+### Reproduce the checks
+
+The test suite uses Node.js 22.7 or later for browser-module tests. With the Python environment active, run:
 
 ```bash
 python3 -m unittest discover -s explorer/tests -v
@@ -33,35 +71,4 @@ python3 scripts/run_queries.py
 python3 scripts/verify_evidence_text.py
 ```
 
-**Explore** — the default landing view. It shows the ten competency questions
-and supporting queries as cards, followed by **Bookmarks** for your saved Build
-queries. Select a card to run it, inspect a result and open its source. Select
-the active card again to hide its results. A bookmark
-can also be reopened in Build or removed from the list.
-
-**Build a question** — choose a populated record type, follow recorded links,
-and filter by values that actually exist in the matching records. Each step's
-choices and counts come from executing the preceding steps, so an unused schema
-relationship cannot send a new question straight to an empty result. Changing
-a step keeps later selections when they still match; the first invalid choice
-and its later steps are cleared with an explanation. Removing a step also
-removes later steps.
-
-**Graph** — the populated individuals, the class hierarchy, or the neighbourhood
-of one resource. Click a node to inspect it, double-click to re-centre on it.
-Nodes with provenance carry a green ring. "See in graph" from a result
-highlights exactly the resources that question returned.
-
-**Schema** — the class hierarchy and property vocabulary. Open a resource to
-see its recorded scope and properties.
-
-**Corpus** — the archived regulatory and firm documents and what each one yielded.
-Use **Add document** to archive a PDF or UTF-8 HTML file (up to 25 MB), record its
-title, type, source date and optional URL, and choose its related organisation
-or regulatory framework. You can also create a new institution or framework.
-Add exact quotations with page/section references and confidence, then either
-support an existing graph record or create a typed record and choose its
-relationship to the source organisation. Additional links can connect a policy
-to a framework, a definition to a concept, and other compatible records.
-New governance statements include a topic and source status so the persona
-queries can find them. Evidence defaults to review pending.
+The scripts audit the graph structure and provenance, run the query pack against the bundled data, and verify each evidence quotation against its cited source.
