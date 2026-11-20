@@ -1,24 +1,22 @@
 # AI Finance Governance Explorer
 
-A thesis prototype for comparing how financial institutions and regulators talk about AI governance. It turns public disclosures and regulatory documents into a searchable knowledge graph. In the browser, you can ask a question about model risk, explainability or AI oversight, inspect the matching records, and open the archived source at the cited passage.
-
-## Why this was built
+## Purpose
 
 Banks and regulators can use different terms for similar practices, or use the same term with different meanings. That makes it hard to compare disclosures across institutions and jurisdictions. The project's **ontology** defines a shared vocabulary for institutions, frameworks and governance practices. Its **knowledge graph** applies that vocabulary to the collected documents and preserves the original wording, page or section reference, and links back to the source.
 
-The prototype covers **7 financial institutions**, **32 archived source documents** and **94 evidence excerpts**. It includes CBA, NAB, Westpac, ANZ, JPMorgan Chase, Goldman Sachs and HSBC, alongside sources such as the EU AI Act, NIST AI Risk Management Framework and Australia's AI Ethics Principles. Results reflect what the collected sources document. A gap in the results means the corpus has yet to verify that item.
+The prototype covers **7 financial institutions**, **32 archived source documents** and **94 evidence excerpts**. It includes CBA, NAB, Westpac, ANZ, JPMorgan Chase, Goldman Sachs and HSBC, alongside sources such as the EU AI Act, NIST AI Risk Management Framework and Australia's AI Ethics Principles.
 
-## A question you can trace to its source
+## Source tracing
 
-1. In **Explore**, run **CQ5**, which asks which firms describe a review or approval process before deploying an AI system. The ten competency questions are the research questions the graph was designed to answer.
-2. In the results, open the 2025 **JPMorgan model review before use** record. The inspector shows the linked quotation and its citation. The record preserves the report's qualification that exceptions to pre-use review may be granted.
-3. Select **Open at page 185** to see the highlighted passage in the archived annual report and read it in context.
+1. In **Explore**, run **CQ5**, which asks which firms describe a review or approval process before deploying an AI system.
+2. In the results, open the 2025 **JPMorgan model review before use** record. The inspector shows the linked quotation and its citation.
+3. Select **Open at page 185** to see the highlighted passage in the archived annual report.
 
 ![Explore results for CQ5 beside the JPMorgan record and its cited evidence](docs/screenshots/query-evidence.png)
 
 ![Archived JPMorgan annual report on PDF page 185, with the cited passage highlighted](docs/screenshots/source-preview.png)
 
-## What you can do in the explorer
+## Explorer
 
 - **Explore** runs the ten competency questions and supporting queries for tasks such as comparing terminology or finding gaps in the corpus. It also lists saved queries from Build.
 - **Build** lets you assemble a question from record types, relationships and values present in the graph. It previews how many records match as you go. You can run, copy or bookmark the resulting SPARQL query, or write one in the advanced editor.
@@ -26,7 +24,7 @@ The prototype covers **7 financial institutions**, **32 archived source document
 - **Schema** shows the ontology's classes and properties, including their definitions and relationships.
 - **Corpus** shows the archived sources and what was extracted from each. You can add a PDF or UTF-8 HTML file up to 25 MB, record quotations with source references, and link them to existing or new graph records. New evidence starts pending review.
 
-The guided builder can also recreate the approval-process question. Start with **Financial firms**, follow **has approval process**, and select **AI Deployment Approval Process** as the linked record type. The builder generates SPARQL, a query language for linked data, from those selections.
+Query Builder: start with **Financial firms**, follow **has approval process**, and select **AI Deployment Approval Process** as the linked record type. The builder generates SPARQL, a query language for linked data, from those selections.
 
 ![Guided query builder following the approval-process relationship from financial firms](docs/screenshots/guided-builder.png)
 
@@ -49,9 +47,9 @@ explorer/run.sh
 
 Open <http://127.0.0.1:8042/> if the browser doesn't open automatically. To use a different port, run `explorer/run.sh --port 8043`.
 
-## How the repository fits together
+## Repository
 
-| Component | What it contains |
+| Component | Contents |
 | --- | --- |
 | [Ontology requirements](ontology/ORSD.md) | The research scope, modelling decisions and ten competency questions |
 | [OWL/Turtle ontology](ontology/ai-finance-governance.ttl) | The vocabulary and populated graph, with [AIRO](ontology/airo.ttl) included locally for AI risk concepts and a mapping to FIBO's Financial Institution class |
