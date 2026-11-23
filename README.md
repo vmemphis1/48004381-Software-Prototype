@@ -37,8 +37,8 @@ The focused graph view shows how the JPMorgan approval record connects to the in
 Use Python 3.10 or later, a modern browser and a Bash-compatible shell.
 
 ```bash
-git clone https://github.com/vmemphis1/48004381-Software-Prototype.git
-cd 48004381-Software-Prototype
+git clone https://github.com/vmemphis1/ai-finance-governance-explorer.git
+cd ai-finance-governance-explorer
 python3 -m venv .venv
 source .venv/bin/activate
 python3 -m pip install -r scripts/requirements.txt
